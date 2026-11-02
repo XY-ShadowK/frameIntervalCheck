@@ -172,18 +172,16 @@ ResultBase findBaseMAD(const uint64_t& initialValueMid, const long double& coeff
         itAbsNum = absNums.begin();
         while(numNow <= indexMid && itAbsNum != absNums.end()) {
             numNow += itAbsNum->second;
-            if(numNow > indexMid) {
-                if(odd || itAbsNum->second > 1)
-                    return itAbsNum->first;
-                valueABSMid = itAbsNum->first;
-                itAbsNum --;
-                valueABSMid += itAbsNum->first;
-                valueABSMid = (valueABSMid >> 1) + valueABSMid & 1;
-                return valueABSMid;
-            }
             itAbsNum ++;
         }
-        return (uint64_t)-1;
+        itAbsNum --;
+        if(odd || itAbsNum->second > 1)
+            return itAbsNum->first;
+        valueABSMid = itAbsNum->first;
+        itAbsNum --;
+        valueABSMid += itAbsNum->first;
+        valueABSMid = (valueABSMid >> 1) + valueABSMid & 1;
+        return valueABSMid;
     };
     static auto getDeviationMAD = [](const uint64_t& lastBase, const size_t& indexUniqueLeft, const size_t& lengthUniqueRight) {
         return getDeviationMADCoefficient(lastBase, indexUniqueLeft, lengthUniqueRight);
