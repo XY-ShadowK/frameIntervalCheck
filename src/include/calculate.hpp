@@ -21,7 +21,9 @@ typedef struct tResultBase {
     uint64_t numOutlierRight;
 }ResultBase;
 
-ResultBase findBase(const std::vector<int64_t>& sumDisplacementArray, const int opt = (int)TOLERATED_DEVIATION_GET_WAY::FIXED, const long double& coefficient = 0.2L, const bool isVerbose = false);
+ResultBase findBase(const std::vector<int64_t>& sumDisplacementArray, const long double& coefficient = 0.2L
+, const int opt = (int)TOLERATED_DEVIATION_GET_WAY::FIXED
+, const bool isVerbose = false);
 bool testPreProcess(const std::vector<int64_t>& sumDisplacementArray);
 
 #endif

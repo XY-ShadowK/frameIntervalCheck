@@ -1,7 +1,9 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
+#include "windowsRub.hpp"
 #include "cxxopts.hpp"
 
 #include "include/files.hpp"
@@ -14,6 +16,11 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
+std::unordered_map<string, int> optionMasks = {
+    {"deviation-rate", (int)TOLERATED_DEVIATION_GET_WAY::FIXED},
+    {"IQR", (int)TOLERATED_DEVIATION_GET_WAY::IQR_CALCULATE},
+    {"MAD", (int)TOLERATED_DEVIATION_GET_WAY::MAD_CALCULATE},
+};
 cxxopts::Options options("frameIntervalCheck", "检查帧间隔异常情况");
 cxxopts::ParseResult settings;
 
@@ -51,8 +58,8 @@ void parseArgs(int argc, char* argv[]) {
             ("decode-only", "仅解码获取帧信息", cxxopts::value<int>()->default_value("0")->implicit_value(to_string((int)PTS_GET_WAY::ENCAPSULATION), cxxopts::ImplicitArgPolicy::Disabled), " ")
             ("hardware-decode", "启用硬件解码（将会关闭软解）", cxxopts::value<int>()->default_value("0")->implicit_value(to_string((int)PTS_GET_WAY::HARDWARE_DECODE), cxxopts::ImplicitArgPolicy::Disabled), " ")
             ("deviation-rate", "可容忍的偏差率（与iqr、mad冲突）", cxxopts::value<long double>()->default_value("0.2"), "TOLERATED_DEVIATION_RATE")
-            ("iqr", "使用四分位距算法计算容忍偏差（与deviation-rate、mad冲突）", cxxopts::value<long double>()->implicit_value("1.5"), "COEFFICIENT")
-            ("mad", "使用中位数绝对偏差算法计算容忍偏差（与deviation-rate、iqr冲突）", cxxopts::value<long double>()->implicit_value("3.0"), "COEFFICIENT")
+            ("IQR", "使用四分位距算法计算容忍偏差（与deviation-rate、mad冲突）", cxxopts::value<long double>()->implicit_value("1.5"), "COEFFICIENT")
+            ("MAD", "使用中位数绝对偏差算法计算容忍偏差（与deviation-rate、iqr冲突）", cxxopts::value<long double>()->implicit_value("3.0"), "COEFFICIENT")
             ("verbose", "显示详细信息")
             ("h,help", "打印帮助信息");
         settings = options.parse(argc, argv);
@@ -72,10 +79,11 @@ void parseArgs(int argc, char* argv[]) {
         optGetPTS ^= settings["encapsulation-only"].as<int>() ^ settings["decode-only"].as<int>() ^ settings["hardware-decode"].as<int>();
         mutuallyExclusiveCheck({
             "deviation-rate",
-            "iqr",
-            "mad"
+            "IQR",
+            "MAD"
         }, [](const string& optionName) {
             coefficient = settings[optionName].as<long double>();
+            optGetBase = optionMasks[optionName];
         });
         if(settings.unmatched().size()) {
             cerr<<settings.unmatched()[0]<<" 不是可识别的选项或参数。"<<endl;
@@ -88,7 +96,7 @@ void parseArgs(int argc, char* argv[]) {
     }
 }
 
-int main(int argc, char* argv[]) {
+UNIVERSE_MAIN
     parseArgs(argc, argv);
     vector<string> files;
     vector<int64_t> ptsArray;
@@ -108,14 +116,14 @@ int main(int argc, char* argv[]) {
         printf("文件: %s\n", file.c_str());
         if(getPTSArray(ptsArray, file, optGetPTS, settings["verbose"].as<bool>())) {
             timeBase = getTimeBase(file);
-            resultPTSTest = findBase(ptsArray, optGetBase, settings["deviation-rate"].as<long double>(), settings["verbose"].as<bool>());
+            resultPTSTest = findBase(ptsArray, settings["deviation-rate"].as<long double>(), optGetBase, settings["verbose"].as<bool>());
             // cerr<<testPreProcess(ptsArray)<<endl;
             temp = resultPTSTest.numOutlierLeft + resultPTSTest.numOutlierRight;
             if(temp) {
                 indexAbnormalArray.emplace_back(i);
                 // numAbnormalArray.emplace_back(temp);
             }
-            printf("时间基: %d/%d\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_low = %llu, num_too_high %llu\n", timeBase.first, timeBase.second, resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
+            printf("时间基: %d/%d 总帧数: %llu\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_low = %llu, num_too_high %llu\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
         }
         else
             printf("获取帧时间戳失败。\n");
@@ -123,4 +131,4 @@ int main(int argc, char* argv[]) {
     }
     printf("\n共扫描 %llu 个文件，共 %llu 个存在异常帧间隔。\n",files.size(), indexAbnormalArray.size());
     return 0;
-}
+UNIVERSE_MAINEND

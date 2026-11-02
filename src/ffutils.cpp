@@ -42,7 +42,8 @@ bool getptsFrame(AVCodecContext* codecContext, AVFrame* frame, std::vector<int64
     return !isLossPTS;
 }
 
-bool getPTSArrayEncapsulation(AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray, const bool isVerbose = false) {
+bool getPTSArrayEncapsulation(AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
+, const bool isVerbose = false) {
     if(isVerbose)
         fprintf(stdout, "try scan encapsulation.\n");
     bool isLossPTS = false;
@@ -67,7 +68,8 @@ bool getPTSArrayEncapsulation(AVFormatContext* formatContext, const int& indexVi
     return !isLossPTS;
 }
 
-bool getPTSArrayDecodeNV(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray, const bool isVerbose = false) {
+bool getPTSArrayDecodeNV(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
+, const bool isVerbose = false) {
     if(isVerbose)
         fprintf(stdout, "try decode by nvdec.\n");
     bool isLossPTS = false;
@@ -94,6 +96,9 @@ bool getPTSArrayDecodeNV(const AVStream* const videoStream, AVFormatContext* for
                 return nvPixelFormat;
         return AV_PIX_FMT_NONE;
     };
+    static auto getFormatNV = [](AVCodecContext* _codecContext, const AVPixelFormat* const pixelFormats) {
+        return getFormatNVTemp(_codecContext, pixelFormats);
+    };
 
     AVBufferRef* cudaDeviceContext = nullptr;
     AVCodecContext* codecContext;
@@ -108,9 +113,7 @@ bool getPTSArrayDecodeNV(const AVStream* const videoStream, AVFormatContext* for
         return false;
     }
     codecContext->hw_device_ctx = av_buffer_ref(cudaDeviceContext);
-    codecContext->get_format = [](AVCodecContext* _codecContext, const AVPixelFormat* const pixelFormats) {
-        return getFormatNVTemp(_codecContext, pixelFormats);
-    };
+    codecContext->get_format = getFormatNV;
     if(avcodec_open2(codecContext, codec, nullptr)) {
         avcodec_free_context(&codecContext);
         av_buffer_unref(&cudaDeviceContext);
@@ -145,7 +148,8 @@ bool getPTSArrayDecodeNV(const AVStream* const videoStream, AVFormatContext* for
     return !isLossPTS;
 }
 
-bool getPTSArrayDecodeSW(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray, const bool isVerbose = false) {
+bool getPTSArrayDecodeSW(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
+, const bool isVerbose = false) {
     if(isVerbose)
         fprintf(stdout, "try decode by software.\n");
     bool isLossPTS = false;
@@ -188,7 +192,9 @@ bool getPTSArrayDecodeSW(const AVStream* const videoStream, AVFormatContext* for
     return !isLossPTS;
 }
 
-bool getPTSArrayDecode(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray, const int opt = (int)PTS_GET_WAY::SOFTWARE_DECODE, const bool isVerbose = false) {
+bool getPTSArrayDecode(const AVStream* const videoStream, AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
+, const int opt = (int)PTS_GET_WAY::SOFTWARE_DECODE
+, const bool isVerbose = false) {
     if(opt & (int)PTS_GET_WAY::HARDWARE_DECODE)
         return getPTSArrayDecodeNV(videoStream, formatContext, indexVideoStream, ptsArray, isVerbose);
     if(opt & (int)PTS_GET_WAY::SOFTWARE_DECODE)
@@ -197,7 +203,9 @@ bool getPTSArrayDecode(const AVStream* const videoStream, AVFormatContext* forma
 }
 
 // RVO?
-bool getPTSArray(std::vector<int64_t>& ptsArray, const std::string& filename, const int opt, const bool isVerbose) {
+bool getPTSArray(std::vector<int64_t>& ptsArray, const std::string& filename
+, const int opt
+, const bool isVerbose) {
     AVFormatContext* formatContext = nullptr;
     int indexVideoStream;
     if(avformat_open_input(&formatContext, filename.c_str(), nullptr, nullptr) < 0)

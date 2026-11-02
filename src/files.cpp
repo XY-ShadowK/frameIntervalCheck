@@ -19,11 +19,14 @@ regex wildcard2Regex(const std::string& pattern) {
     return regex(strRegex, regex::icase);
 }
 
-vector<string> getFiles(const string& path, const string& pattern, const bool isVerbose) {
+vector<string> getFiles(const string& path, const string& pattern
+, const bool isVerbose) {
 	if(!std::filesystem::exists(path)) {
-		fprintf(stderr, "%s 不存在。\n", path.c_str());
+		fprintf(stderr, "%s not exists.\n", path.c_str());
 		return {};
 	}
+	if(isVerbose)
+		printf("scanned files:\n");
     vector<string> files;
     string filename;
 	regex regexPattern = wildcard2Regex(pattern);
@@ -31,7 +34,7 @@ vector<string> getFiles(const string& path, const string& pattern, const bool is
 		if(entry.is_regular_file()) {
 			filename = entry.path().filename().u8string();
 			if(isVerbose)
-				fprintf(stdout, "%s\n", filename.c_str());
+				printf("%s\n", filename.c_str());
 			if(std::regex_match(filename, regexPattern))
 				files.emplace_back(filename);
 		}

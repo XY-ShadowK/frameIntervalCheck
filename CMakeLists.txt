@@ -6,6 +6,11 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(WINDOWS_RUB_INCLUDE "" CACHE PATH "Path to windowsRub include directory")
+if(NOT WINDOWS_RUB_INCLUDE)
+    message(FATAL_ERROR "windowsRub not configured. Set -DWINDOWS_RUB_INCLUDE=...")
+endif()
+
 find_path(FFMPEG_INCLUDE_DIRS
     NAMES libavformat/avformat.h
     PATHS $ENV{FFMPEG_ROOT}/include
@@ -51,11 +56,13 @@ else()
 endif()
 
 add_executable(frameIntervalCheck src/checker.cpp
+    src/files.cpp
     src/ffutils.cpp
     src/calculate.cpp
-    src/files.cpp)
+)
 
 target_include_directories(frameIntervalCheck PRIVATE
+    ${WINDOWS_RUB_INCLUDE}
     ${FFMPEG_INCLUDE_DIRS}
     ${CXXOPTS_INCLUDE_DIRS}
 )
