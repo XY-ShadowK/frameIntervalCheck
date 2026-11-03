@@ -11,6 +11,19 @@ if(NOT WINDOWS_RUB_INCLUDE)
     message(FATAL_ERROR "windowsRub not configured. Set -DWINDOWS_RUB_INCLUDE=...")
 endif()
 
+find_package(cxxopts CONFIG QUIET)
+
+if(cxxopts_FOUND)
+    get_target_property(CXXOPTS_INCLUDE_DIRS cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)
+else()
+    message(STATUS "cxxopts not found automatically. Set CXXOPTS_ROOT manually.")
+    set(CXXOPTS_ROOT "" CACHE PATH "Path to cxxopts include directory")
+    if(NOT CXXOPTS_ROOT)
+        message(FATAL_ERROR "cxxopts not configured. Set -DCXXOPTS_ROOT=...")
+    endif()
+    set(CXXOPTS_INCLUDE_DIRS ${CXXOPTS_ROOT}/include)
+endif()
+
 find_path(FFMPEG_INCLUDE_DIRS
     NAMES libavformat/avformat.h
     PATHS $ENV{FFMPEG_ROOT}/include
@@ -42,19 +55,6 @@ if(NOT FFMPEG_INCLUDE_DIRS OR NOT AVFORMAT_LIBRARY OR NOT AVCODEC_LIBRARY OR NOT
     message(FATAL_ERROR "FFmpeg not found. Set FFMPEG_ROOT environment variable or pass -DFFMPEG_ROOT=<path>")
 endif()
 
-find_package(cxxopts CONFIG QUIET)
-
-if(cxxopts_FOUND)
-    get_target_property(CXXOPTS_INCLUDE_DIRS cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)
-else()
-    message(STATUS "cxxopts not found automatically. Set CXXOPTS_ROOT manually.")
-    set(CXXOPTS_ROOT "" CACHE PATH "Path to cxxopts include directory")
-    if(NOT CXXOPTS_ROOT)
-        message(FATAL_ERROR "cxxopts not configured. Set -DCXXOPTS_ROOT=...")
-    endif()
-    set(CXXOPTS_INCLUDE_DIRS ${CXXOPTS_ROOT}/include)
-endif()
-
 add_executable(frameIntervalCheck src/checker.cpp
     src/files.cpp
     src/ffutils.cpp
@@ -63,8 +63,8 @@ add_executable(frameIntervalCheck src/checker.cpp
 
 target_include_directories(frameIntervalCheck PRIVATE
     ${WINDOWS_RUB_INCLUDE}
-    ${FFMPEG_INCLUDE_DIRS}
     ${CXXOPTS_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 target_link_libraries(frameIntervalCheck PRIVATE
     ${AVFORMAT_LIBRARY}
