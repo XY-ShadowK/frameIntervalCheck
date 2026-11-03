@@ -123,7 +123,7 @@ UNIVERSE_MAIN
                 indexAbnormalArray.emplace_back(i);
                 // numAbnormalArray.emplace_back(temp);
             }
-            printf("时间基: %d/%d 总帧数: %llu\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_low = %llu, num_too_high %llu\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
+            printf("时间基: %d/%d 总帧数: %llu\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_low = %llu, num_too_high = %llu\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
         }
         else
             printf("获取帧时间戳失败。\n");
