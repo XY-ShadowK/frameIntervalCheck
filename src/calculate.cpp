@@ -181,7 +181,7 @@ ResultBase findBaseMAD(const uint64_t& initialValueMid, const long double& coeff
         itAbsNum --;
         valueABSMid += itAbsNum->first;
         valueABSMid = (valueABSMid >> 1) + valueABSMid & 1;
-        return valueABSMid;
+        return (uint64_t)(valueABSMid * coefficient);
     };
     static auto getDeviationMAD = [](const uint64_t& lastBase, const size_t& indexUniqueLeft, const size_t& lengthUniqueRight) {
         return getDeviationMADCoefficient(lastBase, indexUniqueLeft, lengthUniqueRight);
