@@ -105,6 +105,7 @@ UNIVERSE_MAIN
     std::pair<int ,int> timeBase;
     ResultBase resultPTSTest;
     uint64_t temp;
+    size_t numError = 0;
     if(settings.count("path"))
         files = getFiles(settings["path"].as<string>(), settings["pattern"].as<string>(), settings["verbose"].as<bool>());
     else
@@ -125,10 +126,12 @@ UNIVERSE_MAIN
             }
             printf("时间基: %d/%d 总帧数: %llu\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_low = %llu, num_too_high = %llu\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
         }
-        else
+        else {
             printf("获取帧时间戳失败。\n");
+            numError ++;
+        }
         ptsArray.clear();
     }
-    printf("\n共扫描 %llu 个文件，共 %llu 个存在异常帧间隔。\n",files.size(), indexAbnormalArray.size());
+    printf("\n共扫描 %llu 个文件，共 %llu 个获取帧信息失败，共 %llu 个存在异常帧间隔。\n",files.size(), numError, indexAbnormalArray.size());
     return 0;
 UNIVERSE_MAINEND
