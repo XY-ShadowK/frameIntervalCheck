@@ -42,10 +42,10 @@ bool getptsFrame(AVCodecContext* codecContext, AVFrame* frame, std::vector<int64
     return !isLossPTS;
 }
 
-bool getPTSArrayEncapsulation(AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
+bool getPTSArrayContainer(AVFormatContext* formatContext, const int& indexVideoStream, std::vector<int64_t>& ptsArray
 , const bool isVerbose = false) {
     if(isVerbose)
-        fprintf(stdout, "try scan encapsulation.\n");
+        fprintf(stdout, "try scan container.\n");
     bool isLossPTS = false;
     AVPacket* avPacket = av_packet_alloc();
     while (av_read_frame(formatContext, avPacket) >= 0) {
@@ -64,7 +64,7 @@ bool getPTSArrayEncapsulation(AVFormatContext* formatContext, const int& indexVi
     av_packet_unref(avPacket);
 
     if(isVerbose && isLossPTS)
-        fprintf(stderr, "encapsulation has lost pts.\n");
+        fprintf(stderr, "container has lost pts.\n");
     return !isLossPTS;
 }
 
@@ -223,8 +223,8 @@ bool getPTSArray(std::vector<int64_t>& ptsArray, const std::string& filename
     else
         ptsArray.reserve(defaultNumFrame);
 
-    if (!(opt & (int)PTS_GET_WAY::ENCAPSULATION)
-    || !getPTSArrayEncapsulation(formatContext, indexVideoStream, ptsArray, isVerbose)) {
+    if (!(opt & (int)PTS_GET_WAY::CONTAINER)
+    || !getPTSArrayContainer(formatContext, indexVideoStream, ptsArray, isVerbose)) {
         ptsArray.clear();
         if(av_seek_frame(formatContext, -1, 0, AVSEEK_FLAG_BACKWARD) >= 0)
             if(!(opt & ((int)PTS_GET_WAY::SOFTWARE_DECODE | (int)PTS_GET_WAY::HARDWARE_DECODE))
