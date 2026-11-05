@@ -1,0 +1,69 @@
+Third-Party Notices
+
+This product contains third-party components licensed under open-source licenses.
+Detailed license texts are located in the "licenses/" directory.
+
+===============================================================================
+
+1. windowsRub
+   Version: none (commit 0a07f60f20035e6bf6974784988b5ef02a3f57ed)
+   Source: https://github.com/XY-ShadowK/windowsRub
+   License: Mozilla Public License 2.0
+   License file: licenses/windowsRub.txt
+
+2. cxxopts
+   Version: none (commit ad6e41343d4ed239c6579a8e87c0a66b709d04be)
+   Source: https://github.com/jarro2783/cxxopts
+   License: MIT License
+   License file: licenses/cxxopts.txt
+
+3. ffmpeg
+   Version: n8.1.3
+   Source: https://github.com/FFmpeg/FFmpeg
+   License: GNU Lesser General Public License v2.1 (LGPLv2.1)
+   License file: licenses/ffmpeg/LICENSE.md 
+                 licenses/ffmpeg/COPYING.LGPLv2.1
+
+4. zlib
+   Version: 1.3.2-1
+   Source: https://github.com/madler/zlib
+   License: zlib/libpng License
+   License file: licenses/zlib.txt
+
+5. nv-codec-headers
+   Version: n12.1.14.1
+   Source: https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+   License: MIT License
+   License file: licenses/nv-codec-headers.txt
+
+6. libwinpthread (mingw-w64-x86_64-libwinpthread)
+   Version: 14.0.0.r426.g4564ee4b5-1
+   Source: https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-libwinpthread-14.0.0.r426.g4564ee4b5-1-any.pkg.tar.zst
+   License: MIT AND BSD-3-Clause-Clear
+   License file: licenses/libwinpthread.txt
+
+7. mingw-w64-x86_64-crt
+   Version: 14.0.0.r426.g4564ee4b5-1
+   Source: https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-crt-14.0.0.r426.g4564ee4b5-1-any.pkg.tar.zst
+   License: ZPL-2.1
+   License file: licenses/MinGW-w64-crt/COPYING.MinGW-w64-runtime.txt
+                 licenses/MinGW-w64-crt/COPYING.MinGW-w64.txt
+                 licenses/MinGW-w64-crt/COPYING
+
+8. libgcc
+   Version: 16.2.0-4
+   Source: https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-libgcc-16.2.0-4-any.pkg.tar.zst
+   License: GPL-3.0-or-later WITH GCC-exception-3.1
+   License file: licenses/libgcc/COPYING3
+                 licenses/libgcc/COPYING.RUNTIME
+
+9. libstdc++
+   Version: 16.2.0-4
+   Source: https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-libstdc%2B%2B-16.2.0-4-any.pkg.tar.zst
+   License: GPL-3.0-or-later WITH GCC-exception-3.1
+   License file: licenses/libstdc++/COPYING3
+                 licenses/libstdc++/COPYING.RUNTIME
+
+===============================================================================
+
+For more information about these licenses, please refer to the files in the "licenses/" directory.
