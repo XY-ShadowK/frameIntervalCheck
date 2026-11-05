@@ -43,6 +43,7 @@ jobs:
     defaults:
       run:
         shell: ${{ matrix.target }} == 'windows' && 'msys2 {0}' || 'bash' }}
+        working-directory: .github/scripts
     steps:
     - uses: actions/checkout@v4
 
