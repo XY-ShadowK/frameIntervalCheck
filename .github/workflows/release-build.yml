@@ -1,0 +1,102 @@
+name: release-build
+
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: Release Build (${{ matrix.target }}) 
+    runs-on: ${{ matrix.os }}
+
+    env:
+      DEPENDS_BUILD_PREFIX: /usr/local
+      BUILD_PREFIX: /usr/local
+      BUILD_DIR: ${BUILD_PREFIX}/release-build
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      #
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, cl]
+        include:
+          - target: windows
+            os: windows-latest
+            crt: MINGW64
+            c_compiler: cl
+            cpp_compiler: cl
+          - target: linux
+            os: ubuntu-latest
+            crt: ''
+            c_compiler: gcc
+            cpp_compiler: g++
+    defaults:
+      run:
+        shell: ${{ matrix.target }} == 'windows' && 'msys2 {0}' || 'bash' }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Windows
+      if: matrix.target == 'windows'
+      uses:  msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.crt }}
+        update: false
+        cahe: true
+        install: >-
+          base-devel
+          git
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-nasm
+          mingw-w64-x86_64-yasm
+          mingw-w64-x86_64-pkgconf
+          mingw-w64-x86_64-zlib
+          mingw-w64-x86_64-make
+          mingw-w64-x86_64-cmake
+          autoconf automake libtool
+
+    - name: Setup Linux
+      if: matrix.target == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          build-essential cmake git pkg-config \
+          nasm yasm libtool autoconf automake \
+          zlib1g-dev \
+          libva-dev libvdpau-dev \
+          libc6-dev
+        cd $DEPENDS_BUILD_PREFIX && \
+        git clone --depth 1 --branch n12.1.14.1 \
+          https://git.videolan.org/git/ffmpeg/nv-codec-headers.git ./nv-codec-headers \
+        && \
+        cd ${DEPENDS_BUILD_PREFIX}/nv-codec-headers && \
+        make && make install
+
+    - name: Pre Build
+      run: |
+        ./pre-build.sh "${{ matrix.target }}"
+
+    - name: Build
+      run: |
+        ${{ matrix.target }} == "windows" && \
+        ./build-windows.sh || \
+        ./build-linux.sh
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-${{ matrix.target }}
+        path: |
+          $BUILD_DIR
+        retention-days: 7
+        if-no-files-found: error
+    
