@@ -1,0 +1,10 @@
+#!/bin/sh
+
+cd ${GITHUB_WORKSPACE}
+
+cmake -B build \
+-DWINDOWS_RUB_INCLUDE="${DEPENDS_BUILD_PREFIX}/${WINDOWSRUB_LOCAL}/include" \
+-DCXXOPTS_ROOT="${DEPENDS_BUILD_PREFIX}/${CXXOPTS_LOCAL}" \
+-DFFMPEG_ROOT="${DEPENDS_BUILD_PREFIX}/${FFMPEG_LOCAL}" \
+&& \
+cmake --build ./build --config Release

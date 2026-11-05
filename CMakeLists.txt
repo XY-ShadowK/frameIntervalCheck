@@ -11,48 +11,45 @@ if(NOT WINDOWS_RUB_INCLUDE)
     message(FATAL_ERROR "windowsRub not configured. Set -DWINDOWS_RUB_INCLUDE=...")
 endif()
 
-find_package(cxxopts CONFIG QUIET)
-
-if(cxxopts_FOUND)
-    get_target_property(CXXOPTS_INCLUDE_DIRS cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)
+set(CXXOPTS_ROOT "" CACHE PATH "Path to cxxopts root directory")
+if(CXXOPTS_ROOT)
+    set(CXXOPTS_INCLUDE_DIRS ${CXXOPTS_ROOT}/include)
 else()
-    message(STATUS "cxxopts not found automatically. Set CXXOPTS_ROOT manually.")
-    set(CXXOPTS_ROOT "" CACHE PATH "Path to cxxopts include directory")
-    if(NOT CXXOPTS_ROOT)
+    message(STATUS "CXXOPTS_ROOT not set, automatically finding cxxopts.")
+    find_package(cxxopts CONFIG QUIET)
+    if(cxxopts_FOUND)
+        get_target_property(CXXOPTS_INCLUDE_DIRS cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)
+    else()
         message(FATAL_ERROR "cxxopts not configured. Set -DCXXOPTS_ROOT=...")
     endif()
-    set(CXXOPTS_INCLUDE_DIRS ${CXXOPTS_ROOT}/include)
 endif()
 
-find_path(FFMPEG_INCLUDE_DIRS
-    NAMES libavformat/avformat.h
-    PATHS $ENV{FFMPEG_ROOT}/include
-)
-
-find_library(AVFORMAT_LIBRARY
-    NAMES avformat
-    PATHS $ENV{FFMPEG_ROOT}/lib
-)
-
-find_library(AVCODEC_LIBRARY
-    NAMES avcodec
-    PATHS $ENV{FFMPEG_ROOT}/lib
-)
-
-find_library(AVUTIL_LIBRARY
-    NAMES avutil
-    PATHS $ENV{FFMPEG_ROOT}/lib
-)
-
+set(FFMPEG_ROOT "" CACHE PATH "Path to ffmpeg root directory")
 if(FFMPEG_ROOT)
     set(FFMPEG_INCLUDE_DIRS "${FFMPEG_ROOT}/include")
     set(AVFORMAT_LIBRARY   "${FFMPEG_ROOT}/lib/avformat.lib")
     set(AVCODEC_LIBRARY    "${FFMPEG_ROOT}/lib/avcodec.lib")
     set(AVUTIL_LIBRARY     "${FFMPEG_ROOT}/lib/avutil.lib")
-endif()
-
-if(NOT FFMPEG_INCLUDE_DIRS OR NOT AVFORMAT_LIBRARY OR NOT AVCODEC_LIBRARY OR NOT AVUTIL_LIBRARY)
-    message(FATAL_ERROR "FFmpeg not found. Set FFMPEG_ROOT environment variable or pass -DFFMPEG_ROOT=<path>")
+else()
+    find_path(FFMPEG_INCLUDE_DIRS
+        NAMES libavformat/avformat.h
+        PATHS $ENV{FFMPEG_ROOT}/include
+    )
+    find_library(AVFORMAT_LIBRARY
+        NAMES avformat
+        PATHS $ENV{FFMPEG_ROOT}/lib
+    )
+    find_library(AVCODEC_LIBRARY
+        NAMES avcodec
+        PATHS $ENV{FFMPEG_ROOT}/lib
+    )
+    find_library(AVUTIL_LIBRARY
+        NAMES avutil
+        PATHS $ENV{FFMPEG_ROOT}/lib
+    )
+    if(NOT FFMPEG_INCLUDE_DIRS OR NOT AVFORMAT_LIBRARY OR NOT AVCODEC_LIBRARY OR NOT AVUTIL_LIBRARY)
+        message(FATAL_ERROR "FFmpeg not found. Set -DFFMPEG_ROOT=...")
+    endif()
 endif()
 
 add_executable(frameIntervalCheck src/checker.cpp

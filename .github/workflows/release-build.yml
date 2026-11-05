@@ -11,20 +11,28 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      SCRIPTS_DIR: ${GITHUB_WORKSPACE}/.github/scripts
+      PRE_BUILD_SCRIPTS_LOCAL: pre-build
       DEPENDS_BUILD_PREFIX: /usr/local
       BUILD_PREFIX: /usr/local
       BUILD_DIR: ${BUILD_PREFIX}/release-build
+      WINDOWSRUB_COMMIT: 0a07f60f20035e6bf6974784988b5ef02a3f57ed
+      CXXOPTS_COMMIT: ad6e41343d4ed239c6579a8e87c0a66b709d04be
+      FFNVCODEC_TAG: n12.1.14.1
+      FFMPEG_TAG: n8.1.3
+      WINDOWSRUB_REP: https://github.com/XY-ShadowK/windowsRub.git
+      CXXOPTS_REP: https://github.com/jarro2783/cxxopts.git
+      FFNVCODEC_REP: https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+      FFMPEG_REP: https://github.com/FFmpeg/FFmpeg.git
+      WINDOWSRUB_LOCAL: windowsRub
+      CXXOPTS_LOCAL: cxxopts
+      FFNVCODEC_LOCAL: nv_codec_headers
+      FFMPEG_LOCAL: FFmpeg
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
 
-      # Set up a matrix to run the following 3 configurations:
-      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
-      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
-      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
-      #
-      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
@@ -42,8 +50,8 @@ jobs:
             cpp_compiler: g++
     defaults:
       run:
-        shell: ${{ matrix.target }} == 'windows' && 'msys2 {0}' || 'bash' }}
-        working-directory: .github/scripts
+        shell: ${{ matrix.target == 'windows' && 'msys2 {0}' || 'bash' }}
+        working-directory: $SCRIPTS_DIR
     steps:
     - uses: actions/checkout@v4
 
@@ -76,12 +84,58 @@ jobs:
           zlib1g-dev \
           libva-dev libvdpau-dev \
           libc6-dev
-        cd $DEPENDS_BUILD_PREFIX && \
-        git clone --depth 1 --branch n12.1.14.1 \
-          https://git.videolan.org/git/ffmpeg/nv-codec-headers.git ./nv-codec-headers \
-        && \
-        cd ${DEPENDS_BUILD_PREFIX}/nv-codec-headers && \
-        make && make install
+    
+    - name: WindowsRub Cache
+      id: cache-windowsRub
+      uses: actions/cache@v5
+      with:
+        path: ${DEPENDS_BUILD_PREFIX}/${WINDOWSRUB_LOCAL}
+        key: windowsRub-${{ matrix.target }}-${{ WINDOWSRUB_COMMIT }}-${{ hashFiles('${SCRIPTS_DIR}/pre-build.sh') }}
+        restore-keys: |
+          windowsRub-${{ matrix.target }}-${{ WINDOWSRUB_COMMIT }}-
+    
+    - name: CXXOPTS Cache
+      id: cache-cxxopts
+      uses: actions/cache@v5
+      with:
+        path: ${DEPENDS_BUILD_PREFIX}/${CXXOPTS_LOCAL}
+        key: cxxopts-${{ matrix.target }}-${{ CXXOPTS_COMMIT }}-${{ hashFiles('${SCRIPTS_DIR}/pre-build.sh') }}
+        restore-keys: |
+          cxxopts-${{ matrix.target }}-${{ CXXOPTS_COMMIT }}-
+    
+    - name: FFnvcodec Cache
+      id: cache-ffnvcodec
+      uses: actions/cache@v5
+      with:
+        path: ${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_LOCAL}
+        key: ffnvcodec-${{ matrix.target }}-${{ FFNVCODEC_TAG }}-${{ hashFiles('${SCRIPTS_DIR}/pre-build.sh') }}
+        restore-keys: |
+          ffnvcodec-${{ matrix.target }}-${{ FFNVCODEC_TAG }}-
+
+    - name: FFmpeg Cache
+      id: cache-ffmpeg
+      uses: actions/cache@v5
+      with:
+        path: ${DEPENDS_BUILD_PREFIX}/${FFMPEG_LOCAL}/build
+        key: ffmpeg-${{ matrix.target }}-${{ FFMPEG_TAG }}-${{ hashFiles('${SCRIPTS_DIR}/pre-build-ffmpeg.sh') }}
+        restore-keys: |
+          ffmpeg-${{ matrix.target }}-${{ FFMPEG_TAG }}-
+
+    - name: WindowsRub Install
+      if: steps.cache-windowsRub.outputs.cache-hit != 'true'
+      run: echo "WINDOWSRUB_NEED_INSTALL=1" >> "$GITHUB_ENV"
+
+    - name: CXXOPTS Install
+      if: steps.cache-cxxopts.outputs.cache-hit != 'true'
+      run: echo "CXXOPTS_NEED_INSTALL=1" >> "$GITHUB_ENV"
+
+    - name: FFnvcodec Install
+      if: steps.cache-ffnvcodec.outputs.cache-hit != 'true'
+      run: echo "FFNVCODEC_NEED_INSTALL=1" >> "$GITHUB_ENV"
+
+    - name: FFmpeg Install
+      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+      run: echo "FFMPEG_NEED_INSTALL=1" >> "$GITHUB_ENV"
 
     - name: Pre Build
       run: |
@@ -89,9 +143,8 @@ jobs:
 
     - name: Build
       run: |
-        ${{ matrix.target }} == "windows" && \
-        ./build-windows.sh || \
-        ./build-linux.sh
+        ./build.sh "${{ matrix.target }}"
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
@@ -100,4 +153,3 @@ jobs:
           $BUILD_DIR
         retention-days: 7
         if-no-files-found: error
-    
