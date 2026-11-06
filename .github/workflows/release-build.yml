@@ -22,7 +22,7 @@ jobs:
       CXXOPTS_NAME: cxxopts
       FFNVCODEC_NAME: nv-codec-headers
       FFMPEG_NAME: FFmpeg
-      WINDOWSRUB_COMMIT: 8ddb7bc07323e6c544aa62750aff323625a4c27b
+      WINDOWSRUB_COMMIT: ba2fbc1699b34d05c6403918e0f3913b20f578d7
       CXXOPTS_COMMIT: ad6e41343d4ed239c6579a8e87c0a66b709d04be
       FFNVCODEC_TAG: n12.1.14.1
       FFMPEG_TAG: n8.1.3
@@ -98,7 +98,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.WINDOWSRUB_NAME}}
-        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
+        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
         restore-keys: |
           windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-
     
@@ -107,7 +107,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.CXXOPTS_NAME}}
-        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
+        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
         restore-keys: |
           cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-
     
@@ -116,7 +116,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/build
-        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-branch.sh', env.SCRIPTS_DIR)) }}
+        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-branch.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
         restore-keys: |
           ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-
 
@@ -125,7 +125,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/build
-        key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/pre-build-ffmpeg.sh', env.SCRIPTS_DIR)) }}
+        key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/{1}/pre-build-ffmpeg.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
         restore-keys: |
           ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-
 

@@ -111,7 +111,7 @@ ResultBase iterateBase(const uint64_t& initialBase
 ResultBase findBaseFixed(const uint64_t& initialBase, const long double& coefficient
 , const bool isVerbose = false) {
     if(isVerbose)
-        fprintf(stdout, "using fixed tolerated deviation rate %llf to calculate base:\n", coefficient);
+        fprintf(stdout, "using fixed tolerated deviation rate %Lf to calculate base:\n", coefficient);
     static std::function<uint64_t(const uint64_t&)> getDeviationFixedCoefficient;
     getDeviationFixedCoefficient = [&coefficient](const uint64_t& lastBase) {
         return (uint64_t)(lastBase * coefficient + 0.5L);
