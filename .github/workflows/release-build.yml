@@ -8,7 +8,7 @@ on:
 
 env:
   SCRIPTS_DIR: ${{ github.workspace }}/.github/scripts
-  PRE_BUILD_SCRIPTS_LOCAL: pre-build
+  PRE_BUILD_SCRIPTS_NAME: pre-build
   DEPENDS_BUILD_PREFIX: ${{ github.workspace }}/dependency
   
 jobs:
@@ -18,18 +18,22 @@ jobs:
 
     env:
       BUILD_DIR: ${{ github.workspace }}/release-build
+      WINDOWSRUB_NAME: windowsRub
+      CXXOPTS_NAME: cxxopts
+      FFNVCODEC_NAME: nv-codec-headers
+      FFMPEG_NAME: FFmpeg
       WINDOWSRUB_COMMIT: 0a07f60f20035e6bf6974784988b5ef02a3f57ed
       CXXOPTS_COMMIT: ad6e41343d4ed239c6579a8e87c0a66b709d04be
       FFNVCODEC_TAG: n12.1.14.1
       FFMPEG_TAG: n8.1.3
-      WINDOWSRUB_REP: https://github.com/XY-ShadowK/windowsRub.git
-      CXXOPTS_REP: https://github.com/jarro2783/cxxopts.git
-      FFNVCODEC_REP: https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
-      FFMPEG_REP: https://github.com/FFmpeg/FFmpeg.git
-      WINDOWSRUB_LOCAL: windowsRub
-      CXXOPTS_LOCAL: cxxopts
-      FFNVCODEC_LOCAL: nv_codec_headers
-      FFMPEG_LOCAL: FFmpeg
+      WINDOWSRUB_REPO: https://github.com/XY-ShadowK/windowsRub.git
+      CXXOPTS_REPO: https://github.com/jarro2783/cxxopts.git
+      FFNVCODEC_REPO: https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+      FFMPEG_REPO: https://github.com/FFmpeg/FFmpeg.git
+      WINDOWSRUB_LICENSE: Mozilla Public License 2.0
+      CXXOPTS_LICENSE: MIT License
+      FFNVCODEC_LICENSE: MIT License
+      FFMPEG_LICENSE: GNU Lesser General Public License v2.1 (LGPLv2.1)
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
@@ -93,7 +97,7 @@ jobs:
       id: cache-windowsRub
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.WINDOWSRUB_LOCAL}}
+        path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.WINDOWSRUB_NAME}}
         key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-
@@ -102,7 +106,7 @@ jobs:
       id: cache-cxxopts
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.CXXOPTS_LOCAL}}
+        path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.CXXOPTS_NAME}}
         key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-
@@ -111,7 +115,7 @@ jobs:
       id: cache-ffnvcodec
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_LOCAL }}/build
+        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/build
         key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-branch.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-
@@ -120,7 +124,7 @@ jobs:
       id: cache-ffmpeg
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_LOCAL }}/build
+        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/build
         key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/pre-build-ffmpeg.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-
@@ -150,6 +154,11 @@ jobs:
       run: |
         chmod +x ./convert-path-run.sh
         ./convert-path-run.sh "${{ matrix.target }}" ./build.sh
+
+    - name: Get License
+      run: |
+        chmode +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" ./
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <cinttypes>
 
 #include "include/calculate.hpp"
 
@@ -86,7 +87,7 @@ ResultBase iterateBase(const uint64_t& initialBase
         lastSizeUniqueRight = lengthUniqueRight;
         valueDeviation = getNextDeviation(base, indexUniqueLeft, lengthUniqueRight);
         if(isVerbose)
-            fprintf(stdout, "base = %llu, deviation = %llu, left = %llu | %llu, right = %llu | %llu\n", base, valueDeviation, indexUniqueLeft, sortedUniqueDisplacementArray[indexUniqueLeft], lengthUniqueRight, sortedUniqueDisplacementArray[lengthUniqueRight - 1]);
+            fprintf(stdout, "base = %" PRIu64 ", deviation = %" PRIu64 ", left = %" PRIu64 " | %" PRIu64 ", right = %" PRIu64 " | %" PRIu64 "\n", base, valueDeviation, indexUniqueLeft, sortedUniqueDisplacementArray[indexUniqueLeft], lengthUniqueRight, sortedUniqueDisplacementArray[lengthUniqueRight - 1]);
         while(checkOutlierLeft(base, sortedUniqueDisplacementArray[indexUniqueLeft], valueDeviation))
             indexUniqueLeft ++;
         while(checkOutlierRight(base, sortedUniqueDisplacementArray[lengthUniqueRight - 1], valueDeviation))
@@ -136,7 +137,7 @@ ResultBase findBaseIQR(const uint64_t& initialBase, const long double& coefficie
         valueQ1 = (displacementArray[sumNumUniqueDisplacementArray[indexUniqueLeftSub1] + indexQ1] * (4 - weightRight1) + displacementArray[sumNumUniqueDisplacementArray[indexUniqueLeftSub1] + indexQ1 + 1] * weightRight1) / 4.0L + 0.5L;
         valueQ3 = (displacementArray[sumNumUniqueDisplacementArray[indexUniqueLeftSub1] + indexQ3] * (4 - weightRight3) + displacementArray[sumNumUniqueDisplacementArray[indexUniqueLeftSub1] + indexQ3 + 1] * weightRight3) / 4.0L + 0.5L;
         if(isVerbose)
-            fprintf(stdout, "length = %llu, Q1 = %llu, Q3 = %llu\n", lengthSub1 + 1, valueQ1, valueQ3);
+            fprintf(stdout, "length = %" PRIu64 ", Q1 = %" PRIu64 ", Q3 = %" PRIu64 "\n", lengthSub1 + 1, valueQ1, valueQ3);
         return (uint64_t)((valueQ3 - valueQ1) * coefficient + 0.5L);
     };
     static auto getDeviationIQR = [](const uint64_t& lastBase, const size_t& indexUniqueLeft, const size_t& lengthUniqueRight) {
@@ -204,7 +205,7 @@ ResultBase findBase(const vector<int64_t>& sumDisplacementArray, const long doub
     }
     uint64_t base = preProcess(sumDisplacementArray);
     if(isVerbose)
-        fprintf(stdout, "initialBase = %llu\n", base);
+        fprintf(stdout, "initialBase = %" PRIu64 "\n", base);
     switch(opt) {
         case (int)TOLERATED_DEVIATION_GET_WAY::FIXED:
             return findBaseFixed(base, coefficient, isVerbose);
@@ -231,18 +232,18 @@ bool testPreProcess(const vector<int64_t>& sumDisplacementArray) {
     //         continue;
     //     }
     //     if(sumSortedDisplacementArray[numDifferent] != sum[numDifferent & 1] && sumNumUniqueDisplacementArray[numDifferent] != sumNum[numDifferent & 1]) {
-    //         fprintf(stderr, "%llu %llu %llu %llu", sumSortedDisplacementArray[numDifferent], sum[numDifferent & 1], sumNumUniqueDisplacementArray[numDifferent], sumNum[numDifferent & 1]);
+    //         fprintf(stderr, "%" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64 "", sumSortedDisplacementArray[numDifferent], sum[numDifferent & 1], sumNumUniqueDisplacementArray[numDifferent], sumNum[numDifferent & 1]);
     //         return false;
     //     }
-    //     fprintf(stdout, "%llu, %llu\n", sum[numDifferent & 1], sumNum[numDifferent & 1]);
+    //     fprintf(stdout, "%" PRIu64 ", %" PRIu64 "\n", sum[numDifferent & 1], sumNum[numDifferent & 1]);
     //     lastVal = displacementArray[i];
     //     sum[(numDifferent + 1) & 1] = sum[numDifferent & 1] + lastVal;
     //     sumNum[(numDifferent + 1) & 1] = sumNum[numDifferent & 1] + 1;
     //     numDifferent ++;
     // }
-    // fprintf(stdout, "%llu, %llu\n*\n", sum[numDifferent & 1], sumNum[numDifferent & 1]);
+    // fprintf(stdout, "%" PRIu64 ", %" PRIu64 "\n*\n", sum[numDifferent & 1], sumNum[numDifferent & 1]);
     for(int i = 1;i < sumSortedDisplacementArray.size();i ++) {
-        fprintf(stdout, "%llu, %llu\n", sortedUniqueDisplacementArray[i], sumNumUniqueDisplacementArray[i] - sumNumUniqueDisplacementArray[i - 1]);
+        fprintf(stdout, "%" PRIu64 ", %" PRIu64 "\n", sortedUniqueDisplacementArray[i], sumNumUniqueDisplacementArray[i] - sumNumUniqueDisplacementArray[i - 1]);
     }
     return true;
 }

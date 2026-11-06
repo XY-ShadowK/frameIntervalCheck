@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <cinttypes>
 
 #include "windowsRub.hpp"
 #include "cxxopts.hpp"
@@ -64,7 +65,7 @@ void parseArgs(int argc, char* argv[]) {
             ("h,help", "打印帮助信息");
         settings = options.parse(argc, argv);
         if(argc == 1 || settings.count("help")) {
-            printf(options.help().c_str());
+            printf("%s", options.help().c_str());
             exit(0);
         }
         mutuallyExclusiveCheck({
@@ -124,7 +125,7 @@ UNIVERSE_MAIN
                 indexAbnormalArray.emplace_back(i);
                 // numAbnormalArray.emplace_back(temp);
             }
-            printf("时间基: %d/%d 总帧数: %llu\n帧间隔: base = %llu, min = %llu, max = %llu, num_too_small = %llu, num_too_large = %llu\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
+            printf("时间基: %d/%d 总帧数: %" PRIu64 "\n帧间隔: base = %" PRIu64 ", min = %" PRIu64 ", max = %" PRIu64 ", num_too_small = %" PRIu64 ", num_too_large = %" PRIu64 "\n", timeBase.first, timeBase.second, ptsArray.size(), resultPTSTest.base, resultPTSTest.minn, resultPTSTest.maxn, resultPTSTest.numOutlierLeft, resultPTSTest.numOutlierRight);
         }
         else {
             printf("获取帧时间戳失败。\n");
@@ -132,6 +133,6 @@ UNIVERSE_MAIN
         }
         ptsArray.clear();
     }
-    printf("\n共扫描 %llu 个文件，共 %llu 个获取帧信息失败，共 %llu 个存在异常帧间隔。\n",files.size(), numError, indexAbnormalArray.size());
+    printf("\n共扫描 %" PRIu64 " 个文件，共 %" PRIu64 " 个获取帧信息失败，共 %" PRIu64 " 个存在异常帧间隔。\n",files.size(), numError, indexAbnormalArray.size());
     return 0;
 UNIVERSE_MAINEND
