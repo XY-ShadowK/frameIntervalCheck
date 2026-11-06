@@ -26,11 +26,8 @@ endif()
 
 set(FFMPEG_ROOT "" CACHE PATH "Path to ffmpeg root directory")
 if(FFMPEG_ROOT)
+    message(STATUS "FFMPEG_ROOT set, finding libraries.")
     set(FFMPEG_INCLUDE_DIRS "${FFMPEG_ROOT}/include")
-    find_path(FFMPEG_INCLUDE_DIRS
-        NAMES libavformat/avformat.h
-        PATHS ${FFMPEG_ROOT}/include
-    )
     find_library(AVFORMAT_LIBRARY
         NAMES avformat
         PATHS ${FFMPEG_ROOT}/lib
@@ -63,7 +60,7 @@ else()
     )
 endif()
 if(NOT FFMPEG_INCLUDE_DIRS OR NOT AVFORMAT_LIBRARY OR NOT AVCODEC_LIBRARY OR NOT AVUTIL_LIBRARY)
-    message(FATAL_ERROR "FFmpeg not configured. Set -DFFMPEG_ROOT=...")
+    message(FATAL_ERROR "FFmpeg not configured, please confirm your installation.")
 endif()
 
 add_executable(frameIntervalCheck src/checker.cpp

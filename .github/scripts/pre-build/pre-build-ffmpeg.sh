@@ -30,7 +30,6 @@ cd ${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME} && \
 ./configure \
 --prefix=${ffmpeg_build_path} \
 --bindir=${ffmpeg_build_path}/bin \
---shlibdir=${ffmpeg_build_path}/bin \
 --libdir=${ffmpeg_build_path}/lib \
 --incdir=${ffmpeg_build_path}/include \
 --pkgconfigdir=${ffmpeg_build_path}/lib/pkgconfig \
