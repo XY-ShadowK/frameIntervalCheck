@@ -5,6 +5,11 @@ on:
     tags:
       - v*
   workflow_dispatch:
+
+env:
+  SCRIPTS_DIR: ${{ github.workspace }}/.github/scripts
+  PRE_BUILD_SCRIPTS_LOCAL: pre-build
+  DEPENDS_BUILD_PREFIX: ${{ github.workspace }}/dependency
   
 jobs:
   build:
@@ -12,11 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      SCRIPTS_DIR: ${{ GITHUB_WORKSPACE }}/.github/scripts
-      PRE_BUILD_SCRIPTS_LOCAL: pre-build
-      DEPENDS_BUILD_PREFIX: /usr/local
-      BUILD_PREFIX: /usr/local
-      BUILD_DIR: ${{ env.BUILD_PREFIX }}/release-build
+      BUILD_DIR: ${{ github.workspace }}/release-build
       WINDOWSRUB_COMMIT: 0a07f60f20035e6bf6974784988b5ef02a3f57ed
       CXXOPTS_COMMIT: ad6e41343d4ed239c6579a8e87c0a66b709d04be
       FFNVCODEC_TAG: n12.1.14.1
@@ -35,26 +36,28 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, cl]
         include:
           - target: windows
             os: windows-latest
+            shell: 'msys2 {0}'
+            build_type: Release
             crt: MINGW64
             c_compiler: cl
             cpp_compiler: cl
           - target: linux
             os: ubuntu-latest
+            shell: bash
+            build_type: Release
             crt: ''
             c_compiler: gcc
             cpp_compiler: g++
     defaults:
       run:
-        shell: ${{ matrix.target == 'windows' && 'msys2 {0}' || 'bash' }}
+      #  shell: ${{ matrix.target == 'windows' && 'msys2 {0}' || 'bash' }}
+        shell: ${{ matrix.shell }}
         working-directory: ${{ env.SCRIPTS_DIR }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup Windows
       if: matrix.target == 'windows'
@@ -91,7 +94,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.WINDOWSRUB_LOCAL}}
-        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}
+        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-
     
@@ -100,7 +103,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.CXXOPTS_LOCAL}}
-        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}
+        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-
     
@@ -109,7 +112,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_LOCAL }}/build
-        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}
+        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR)) }}-${{ hashFiles(format('{0}/pre-build-header-only-branch.sh', env.SCRIPTS_DIR)) }}
         restore-keys: |
           ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-
 
@@ -140,11 +143,13 @@ jobs:
 
     - name: Pre Build
       run: |
-        ./pre-build.sh "${{ matrix.target }}"
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" ./pre-build.sh
 
     - name: Build
       run: |
-        ./build.sh "${{ matrix.target }}"
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" ./build.sh
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
