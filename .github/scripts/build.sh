@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${GITHUB_WORKSPACE}
+cd "${GITHUB_WORKSPACE}"
 
 OPTION_LIST=(
     -DWINDOWS_RUB_INCLUDE="${DEPENDS_BUILD_PREFIX}/${WINDOWSRUB_NAME}/include"
@@ -9,7 +9,7 @@ OPTION_LIST=(
 )
 echo "${OPTION_LIST[@]}"
 
-cmake -B ${BUILD_DIR} \
+cmake -B "${BUILD_DIR}" \
 "${OPTION_LIST[@]}" \
 && \
-cmake --build ${BUILD_DIR} --config Release
+cmake --build "${BUILD_DIR}" --config Release

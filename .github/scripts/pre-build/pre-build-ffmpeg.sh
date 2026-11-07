@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export PKG_CONFIG_PATH="${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/build/lib/pkgconfig:$PKG_CONFIG_PATH"
-echo $PKG_CONFIG_PATH
+echo "$PKG_CONFIG_PATH"
 
-if [ $BUILD_TARGET == "windows" ]; then
+if [ "$BUILD_TARGET" == "windows" ]; then
     EXTRA_LIST=( --enable-dxva --enable-d3d11va --enable-d3d12va )
     EXTRA_CFLAGS="-O3 -ftree-vectorize -funroll-loops"
     EXTRA_LDFLAGS="-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -lz -Wl,--no-whole-archive -Wl,-Bdynamic"
@@ -16,17 +16,17 @@ if [ $BUILD_TARGET == "windows" ]; then
 fi
 
 echo "FFNVCODEC_CFLAG_NEED = ${FFNVCODEC_CFLAG_NEED}"
-FFNVCODEC_CFLAG=$(pkg-config --cflags ffnvcodec)
+FFNVCODEC_CFLAG="$(pkg-config --cflags ffnvcodec)"
 echo "pkg-config: FFNVCODEC_CFLAG = ${FFNVCODEC_CFLAG}"
-[ $FFNVCODEC_CFLAG == $FFNVCODEC_CFLAG_NEED ] || \
+[ "$FFNVCODEC_CFLAG" == "$FFNVCODEC_CFLAG_NEED" ] || \
 exit -7
 echo "pkg-config find right ffnvcodec."
 
-ffmpeg_build_path=${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}/build && \
+ffmpeg_build_path="${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}/build" && \
  \
-git clone ${FFMPEG_REPO} --branch ${FFMPEG_TAG} --depth 1 ${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME} && \
+git clone "${FFMPEG_REPO}" --branch "${FFMPEG_TAG}" --depth 1 "${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}" && \
  \
-cd ${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME} && \
+cd "${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}" && \
 ./configure \
 --prefix=${ffmpeg_build_path} \
 --bindir=${ffmpeg_build_path}/bin \
@@ -55,8 +55,8 @@ cd ${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME} && \
 exit -8
 echo "install ${FFMPEG_NAME} ${FFMPEG_TAG} ok."
 
-[ $BUILD_TARGET == "windows" ] || \
-return 0
-mv ${ffmpeg_build_path}/bin/*.lib ${ffmpeg_build_path}/lib/ || \
-exit -9
-echo "move .lib files to /lib ok."
+# [ "$BUILD_TARGET" == "windows" ] || \
+# return 0
+# mv "${ffmpeg_build_path}/bin/*.lib" "${ffmpeg_build_path}/lib/" || \
+# exit -9
+# echo "move .lib files to /lib ok."

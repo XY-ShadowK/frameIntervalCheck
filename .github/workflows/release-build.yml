@@ -57,7 +57,6 @@ jobs:
             cpp_compiler: g++
     defaults:
       run:
-      #  shell: ${{ matrix.target == 'windows' && 'msys2 {0}' || 'bash' }}
         shell: ${{ matrix.shell }}
         working-directory: ${{ env.SCRIPTS_DIR }}
     steps:
@@ -69,7 +68,7 @@ jobs:
       with:
         msystem: ${{ matrix.crt }}
         update: false
-        cahe: true
+        cache: true
         install: >-
           base-devel
           git
@@ -85,8 +84,8 @@ jobs:
     - name: Setup Linux
       if: matrix.target == 'Linux'
       run: |
-        sudo apt update
-        sudo apt install -y \
+        sudo apt-get update
+        sudo apt-get install -y \
           build-essential cmake git pkg-config \
           nasm yasm libtool autoconf automake \
           zlib1g-dev \
@@ -157,8 +156,8 @@ jobs:
 
     - name: Get License
       run: |
-        chmode +x ./convert-path-run.sh
-        ./convert-path-run.sh "${{ matrix.target }}" ./
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" ./get-license.sh
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
