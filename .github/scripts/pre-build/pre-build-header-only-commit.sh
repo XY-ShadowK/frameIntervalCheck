@@ -11,7 +11,7 @@ if (test "$1") && (test "$2") && (test "$3"); then
     test "$4" || \
     return 0
     cd "$3" && \
-    make && make install "PREFIX=$3/build" || \
+    make && make install "PREFIX=$3/${DEPENDS_BUILD_LOCAL}" || \
     exit -6
     echo "install $3 ok."
 fi

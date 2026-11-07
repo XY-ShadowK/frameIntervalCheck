@@ -69,6 +69,10 @@ add_executable(frameIntervalCheck src/checker.cpp
     src/calculate.cpp
 )
 
+set_target_properties(frameIntervalCheck PROPERTIES
+    INSTALL_RPATH "$ORIGIN/lib"
+)
+
 target_include_directories(frameIntervalCheck PRIVATE
     ${WINDOWS_RUB_INCLUDE}
     ${CXXOPTS_INCLUDE_DIRS}

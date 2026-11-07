@@ -1,18 +1,18 @@
 #!/bin/bash
 
-export PKG_CONFIG_PATH="${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/build/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/${DEPENDS_BUILD_LOCAL}/lib/pkgconfig:$PKG_CONFIG_PATH"
 echo "$PKG_CONFIG_PATH"
 
 if [ "$BUILD_TARGET" == "windows" ]; then
     EXTRA_LIST=( --enable-dxva --enable-d3d11va --enable-d3d12va )
     EXTRA_CFLAGS="-O3 -ftree-vectorize -funroll-loops"
     EXTRA_LDFLAGS="-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -lz -Wl,--no-whole-archive -Wl,-Bdynamic"
-    FFNVCODEC_CFLAG_NEED="-I$(cygpath -w "${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/build/include" | tr "\\" "/")"
+    FFNVCODEC_CFLAG_NEED="-I$(cygpath -w "${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/${DEPENDS_BUILD_LOCAL}/include" | tr "\\" "/")"
     else
         EXTRA_LIST=( --enable-vaapi --enable-vdpau )
         EXTRA_CFLAGS="-O3 -mtune=generic -ftree-vectorize -funroll-loops"
         EXTRA_LDFLAGS="-Wl,-Bdynamic"
-        FFNVCODEC_CFLAG_NEED="-I${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/build/include"
+        FFNVCODEC_CFLAG_NEED="-I${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/${DEPENDS_BUILD_LOCAL}/include"
 fi
 
 echo "FFNVCODEC_CFLAG_NEED = ${FFNVCODEC_CFLAG_NEED}"
@@ -22,7 +22,7 @@ echo "pkg-config: FFNVCODEC_CFLAG = ${FFNVCODEC_CFLAG}"
 exit -7
 echo "pkg-config find right ffnvcodec."
 
-ffmpeg_build_path="${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}/build" && \
+ffmpeg_build_path="${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}/${DEPENDS_BUILD_LOCAL}" && \
  \
 git clone "${FFMPEG_REPO}" --branch "${FFMPEG_TAG}" --depth 1 "${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}" && \
  \
@@ -55,8 +55,9 @@ cd "${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}" && \
 exit -8
 echo "install ${FFMPEG_NAME} ${FFMPEG_TAG} ok."
 
-# [ "$BUILD_TARGET" == "windows" ] || \
-# return 0
-# mv "${ffmpeg_build_path}/bin/*.lib" "${ffmpeg_build_path}/lib/" || \
-# exit -9
-# echo "move .lib files to /lib ok."
+[ "$BUILD_TARGET" == "windows" ] || \
+return 0
+ls -la "${ffmpeg_build_path}/bin"
+mv "${ffmpeg_build_path}/bin/*.lib" "${ffmpeg_build_path}/lib/" || \
+exit -9
+echo "move .lib files to /lib ok."
