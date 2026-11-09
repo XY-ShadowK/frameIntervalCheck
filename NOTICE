@@ -1,6 +1,6 @@
 Third-Party Notices
 
-This product contains third-party components licensed under open-source licenses.
+This product contains third-party components( some are c/c++ runtime or standard library implementation, system api, hardware driver api) licensed under open-source licenses.
 Detailed license texts are located in the "licenses/" directory.
 
 ===============================================================================

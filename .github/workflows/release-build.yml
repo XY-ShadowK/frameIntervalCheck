@@ -7,9 +7,13 @@ on:
   workflow_dispatch:
 
 env:
-  SCRIPTS_DIR: ${{ github.workspace }}/.github/scripts
-  PRE_BUILD_SCRIPTS_NAME: pre-build
+  PROJECT_NAME: frameIntervalCheck
+  SCRIPTS_PATH: ${{ github.workspace }}/.github/scripts
+  PRE_BUILD_SCRIPTS_LOCAL: pre-build
   DEPENDS_BUILD_PREFIX: ${{ github.workspace }}/dependency
+  DEPENDS_BUILD_LOCAL: build
+  BUILD_PATH: ${{ github.workspace }}/release-build
+  RELEASE_PATH: ${{ github.workspace }}/release
   
 jobs:
   build:
@@ -17,7 +21,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      BUILD_DIR: ${{ github.workspace }}/release-build
       WINDOWSRUB_NAME: windowsRub
       CXXOPTS_NAME: cxxopts
       FFNVCODEC_NAME: nv-codec-headers
@@ -58,7 +61,7 @@ jobs:
     defaults:
       run:
         shell: ${{ matrix.shell }}
-        working-directory: ${{ env.SCRIPTS_DIR }}
+        working-directory: ${{ env.SCRIPTS_PATH }}
     steps:
     - uses: actions/checkout@v6
 
@@ -97,7 +100,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.WINDOWSRUB_NAME}}
-        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
+        key: windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_PATH), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
         restore-keys: |
           windowsRub-${{ matrix.target }}-${{ env.WINDOWSRUB_COMMIT }}-
     
@@ -106,7 +109,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX}}/${{ env.CXXOPTS_NAME}}
-        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
+        key: cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_PATH), format('{0}/{1}/pre-build-header-only-commit.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
         restore-keys: |
           cxxopts-${{ matrix.target }}-${{ env.CXXOPTS_COMMIT }}-
     
@@ -114,8 +117,8 @@ jobs:
       id: cache-ffnvcodec
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/build
-        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_DIR), format('{0}/{1}/pre-build-header-only-branch.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
+        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}
+        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_PATH), format('{0}/{1}/pre-build-header-only-branch.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
         restore-keys: |
           ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-
 
@@ -123,26 +126,40 @@ jobs:
       id: cache-ffmpeg
       uses: actions/cache@v5
       with:
-        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/build
-        key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/{1}/pre-build-ffmpeg.sh', env.SCRIPTS_DIR, env.PRE_BUILD_SCRIPTS_NAME)) }}
-        restore-keys: |
-          ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-
+        path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}
+        key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/{1}/pre-build-ffmpeg.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
 
-    - name: WindowsRub Install
+    - name: Test WindowsRub Installed
       if: steps.cache-windowsRub.outputs.cache-hit != 'true'
-      run: echo "WINDOWSRUB_NEED_INSTALL=1" >> "$GITHUB_ENV"
+      run: |
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" "
+        source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.WINDOWSRUB_NAME }}\" windwosRub WINDOWSRUB_NEED_INSTALL
+        "
 
-    - name: CXXOPTS Install
+    - name: Test CXXOPTS Installed
       if: steps.cache-cxxopts.outputs.cache-hit != 'true'
-      run: echo "CXXOPTS_NEED_INSTALL=1" >> "$GITHUB_ENV"
+      run: |
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" "
+        source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.CXXOPTS_NAME }}\" cxxopts CXXOPTS_NEED_INSTALL
+        "
 
-    - name: FFnvcodec Install
+    - name: Test FFnvcodec Installed
       if: steps.cache-ffnvcodec.outputs.cache-hit != 'true'
-      run: echo "FFNVCODEC_NEED_INSTALL=1" >> "$GITHUB_ENV"
+      run: |
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" "
+        source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}\" ffnvcodec FFNVCODEC_NEED_INSTALL
+        "
 
-    - name: FFmpeg Install
+    - name: Test FFmpeg Installed
       if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-      run: echo "FFMPEG_NEED_INSTALL=1" >> "$GITHUB_ENV"
+      run: |
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" "
+        source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}\" ffmpeg FFMPEG_NEED_INSTALL
+        "
 
     - name: Pre Build
       run: |
@@ -164,6 +181,6 @@ jobs:
       with:
         name: dist-${{ matrix.target }}
         path: |
-          ${{ env.BUILD_DIR }}
+          ${{ env.RELEASE_PATH }}
         retention-days: 7
         if-no-files-found: error

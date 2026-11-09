@@ -13,6 +13,7 @@ endif()
 
 set(CXXOPTS_ROOT "" CACHE PATH "Path to cxxopts root directory")
 if(CXXOPTS_ROOT)
+    message(STATUS "set cxxopts with CXXOPTS_ROOT = '${CXXOPTS_ROOT} .'")
     set(CXXOPTS_INCLUDE_DIRS ${CXXOPTS_ROOT}/include)
 else()
     message(STATUS "CXXOPTS_ROOT not set, automatically finding cxxopts.")
@@ -26,7 +27,7 @@ endif()
 
 set(FFMPEG_ROOT "" CACHE PATH "Path to ffmpeg root directory")
 if(FFMPEG_ROOT)
-    message(STATUS "FFMPEG_ROOT set, finding libraries.")
+    message(STATUS "FFMPEG_ROOT set, finding libraries with FFMPEG_ROOT = '${FFMPEG_ROOT}' .")
     set(FFMPEG_INCLUDE_DIRS "${FFMPEG_ROOT}/include")
     find_library(AVFORMAT_LIBRARY
         NAMES avformat
@@ -68,6 +69,17 @@ add_executable(frameIntervalCheck src/checker.cpp
     src/ffutils.cpp
     src/calculate.cpp
 )
+
+if(WIN32 AND MINGW)
+    target_link_options(frameIntervalCheck PRIVATE
+        -static-libgcc
+        -static-libstdc++
+    )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties(frameIntervalCheck PROPERTIES
+        INSTALL_RPATH "$ORIGIN/lib"
+    )
+endif()
 
 target_include_directories(frameIntervalCheck PRIVATE
     ${WINDOWS_RUB_INCLUDE}
