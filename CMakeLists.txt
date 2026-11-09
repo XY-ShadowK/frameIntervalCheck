@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.15)
-project(frameIntervalCheck LANGUAGES CXX)
+set(APP_VERSION "undefined" CACHE STRING "Application version string")
+if(APP_VERSION STREQUAL "undefined")
+    project(frameIntervalCheck LANGUAGES CXX)
+else()
+    project(frameIntervalCheck VERSION ${APP_VERSION} LANGUAGES CXX)
+endif()
+
+
+add_compile_definitions(CMAKE_BUILD)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -86,6 +94,24 @@ target_link_libraries(frameIntervalCheck PRIVATE
     ${AVCODEC_LIBRARY}
     ${AVUTIL_LIBRARY}
 )
+
+if(DEFINED ENV{RUNNER_TEMP})
+    set(COMPILER_TMP "$ENV{RUNNER_TEMP}/compiler_${PROJECT_NAME}" CACHE PATH "Path to compiler temp directory")
+elseif(DEFINED ENV{TMP})
+    set(COMPILER_TMP "$ENV{TMP}/compiler_${PROJECT_NAME}" CACHE PATH "Path to compiler temp directory")
+elseif(DEFINED ENV{TEMP})
+    set(COMPILER_TMP "$ENV{TEMP}/compiler_${PROJECT_NAME}" CACHE PATH "Path to compiler temp directory")
+endif()
+if(COMPILER_TMP)
+    configure_file(
+        src/compiler/version.h.in
+        ${COMPILER_TMP}/version.h
+        @ONLY
+    )
+    target_include_directories(frameIntervalCheck PRIVATE
+        ${COMPILER_TMP}
+    )
+endif()
 
 if(MSVC)
     target_compile_options(frameIntervalCheck PRIVATE /utf-8 /EHsc)

@@ -14,6 +14,7 @@ env:
   DEPENDS_BUILD_LOCAL: build
   BUILD_PATH: ${{ github.workspace }}/release-build
   RELEASE_PATH: ${{ github.workspace }}/release
+  GPG_SIGN_SUFFIX: sig
   
 jobs:
   build:
@@ -182,10 +183,158 @@ jobs:
         ./convert-path-run.sh "${{ matrix.target }}" ./get-license.sh
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
-        name: dist-${{ matrix.target }}
+        name: build-result-${{ matrix.target }}
         path: |
           ${{ env.RELEASE_PATH }}
         retention-days: 7
         if-no-files-found: error
+
+  test-and-publish:
+    needs: build
+    name: Test and Publish Build (${{ matrix.target }}) 
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          - target: windows
+            os: windows-latest
+            shell: pwsh
+            dist-suffix: zip
+          - target: linux
+            os: ubuntu-latest
+            shell: bash
+            dist-suffix: tar.gz
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - name: Setup (Windows)
+      if: matrix.target == 'windows'
+      run: |
+        choco install gnupg -y
+        $TEMP_PATH = "${{ runner.temp }}/${{ env.PROJECT_NAME }}"
+        $PACKAGE_PATH = "$TEMP_PATH/packages"
+        $TEST_PATH = "$TEMP_PATH/test"
+        "TEMP_PATH=$TEMP_PATH" >> $env:GITHUB_OUTPUT
+        "PACKAGE_PATH=$PACKAGE_PATH" >> $env:GITHUB_OUTPUT
+        "TEST_PATH=$TEST_PATH" >> $env:GITHUB_OUTPUT
+
+    - name: Setup (Linux)
+      if: matrix.target == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libva libvdpau
+        temp_path="${{ runner.temp }}/${{ env.PROJECT_NAME }}"
+        package_path="${temp_path}/packages"
+        test_path="${temp_path}/test"
+        echo "TEMP_PATH=${temp_path}" >> "$GITHUB_ENV"
+        echo "PACKAGE_PATH=${package_path}" >> "$GITHUB_ENV"
+        echo "TEST_PATH=${test_path}" >> "$GITHUB_ENV"
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v5
+      with:
+        name: build-result-${{ matrix.target }}
+        path: ${{ github.workspace }}
+    
+    - name: Test Build (Windows)
+      run: |
+        Move-Item -Path "./build-result-${{ matrix.target }}.${{ matrix.dist-suffix }}" -Destination "$env:PACKAGE_PATH"
+        Expand-Archive -Path "$env:PACKAGE_PATH/build-result-${{ matrix.target }}.${{ matrix.dist-suffix }}" -DestinationPath "$env:TEST_PATH"
+        Set-Location "$env:TEST_PATH"
+        $output = & "${{ env.PROJECT_NAME }}" --version
+        $version = "${{ github.ref_name }}" -replace '^v', ''
+        if ($output -match "${{ env.PROJECT_NAME }} $version") {
+          Write-Output "test succeeded."
+        } else {
+          Write-Error "test failed." -ErrorAction Stop
+        }
+    
+    - name: Test Build (Linux)
+      run: |
+        mv "./build-result-${{ matrix.target }}.${{ matrix.dist-suffix }}" "${PACKAGE_PATH}"
+        unzip "${PACKAGE_PATH}/build-result-${{ matrix.target }}.${{ matrix.dist-suffix }}" -d "${TEST_PATH}/build-result-${{ matrix.target }}"
+        cd "${TEST_PATH}/build-result-${{ matrix.target }}"
+        output=$("${{ env.PROJECT_NAME }}" --version)
+        version="${{ github.ref_name }}"
+        if [ "$ouput" == "${{ env.PROJECT_NAME }} ${version#v}" ]; then
+          echo "test succeeded."
+          else
+            echo "test failed."
+            exit -1
+        fi
+
+    - name: Package Release (Windows)
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRI }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASS }}
+      run: |
+        Set-Location "$env:PACKAGE_PATH"
+        Rename-Item -Path "build-result-${{ matrix.target }}.${{ matrix.dist-suffix }}" -NewName "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}"
+        git archive --format=${{ matrix.dist-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+        gpg --batch --yes \
+          --local-user "$env:GPG_PRIVATE_KEY" \
+          --passphrase "$env:GPG_PASS" \
+          --detach-sign \
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}"
+        gpg --batch --yes \
+          --local-user "$env:GPG_PRIVATE_KEY" \
+          --passphrase "$env:GPG_PASS" \
+          --detach-sign \
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+
+    - name: Package Release (Linux)
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRI }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASS }}
+      run: |
+        cd "${PACKAGE_PATH}"
+        tar -zcvf "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}" "${TEST_PATH}/build-result-${{ matrix.target }}"
+        git archive --format=${{ matrix.dist-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+        gpg --batch --yes \
+          --local-user "$GPG_PRIVATE_KEY" \
+          --passphrase "$GPG_PASS" \
+          --detach-sign \
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}"
+        gpg --batch --yes \
+          --local-user "$GPG_PRIVATE_KEY" \
+          --passphrase "$GPG_PASS" \
+          --detach-sign \
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+
+    - name: Publish Release
+      uses: softprops/action-gh-release@v3
+      if: github.ref_type == 'tag'
+      with:
+        body: "# ${{ github.ref_name }}"
+        preserve_order: true
+        working_directory: "${{ runner.temp }}/${{ env.PROJECT_NAME }}/packages"
+        generate_release_notes: true
+        files: |
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}.${{ env.GPG_SIGN_SUFFIX }}"
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}.${{ env.GPG_SIGN_SUFFIX }}"
+
+    - name: Publish Release (Test)
+      uses: softprops/action-gh-release@v3
+      if: github.ref_type != 'tag'
+      with:
+        body: "# ${{ github.ref_name }}"
+        draft: true
+        preserve_order: true
+        working_directory: "${{ runner.temp }}/${{ env.PROJECT_NAME }}/packages"
+        generate_release_notes: true
+        files: |
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ matrix.target }}.${{ matrix.dist-suffix }}.${{ env.GPG_SIGN_SUFFIX }}"
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}"
+          "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.dist-suffix }}.${{ env.GPG_SIGN_SUFFIX }}"

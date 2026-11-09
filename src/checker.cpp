@@ -1,3 +1,8 @@
+#ifdef CMAKE_BUILD
+#include "version.h"
+#else
+#include "compiler/version.h.in"
+#endif
 
 #include <iostream>
 #include <string>
@@ -62,10 +67,15 @@ void parseArgs(int argc, char* argv[]) {
             ("IQR", "使用四分位距算法计算容忍偏差（与deviation-rate、mad冲突）", cxxopts::value<long double>()->implicit_value("1.5"), "COEFFICIENT")
             ("MAD", "使用中位数绝对偏差算法计算容忍偏差（与deviation-rate、iqr冲突）", cxxopts::value<long double>()->implicit_value("3.0"), "COEFFICIENT")
             ("verbose", "显示详细信息")
+            ("v,version", "打印当前版本")
             ("h,help", "打印帮助信息");
         settings = options.parse(argc, argv);
         if(argc == 1 || settings.count("help")) {
             printf("%s", options.help().c_str());
+            exit(0);
+        }
+        if(settings.count("version")) {
+            printf("picOverlay " APP_VERSION "\n");
             exit(0);
         }
         mutuallyExclusiveCheck({
