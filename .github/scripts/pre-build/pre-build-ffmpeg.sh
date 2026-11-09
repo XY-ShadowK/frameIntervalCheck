@@ -6,14 +6,13 @@ echo "$PKG_CONFIG_PATH"
 if [ "$BUILD_TARGET" == "windows" ]; then
     EXTRA_LIST=( --enable-dxva --enable-d3d11va --enable-d3d12va )
     EXTRA_CFLAGS="-O3 -ftree-vectorize -funroll-loops"
-    EXTRA_LDFLAGS="-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -lz -Wl,--no-whole-archive -Wl,-Bdynamic"
     FFNVCODEC_CFLAG_NEED="-I$(cygpath -w "${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/${DEPENDS_BUILD_LOCAL}/include" | tr "\\" "/")"
     else
         EXTRA_LIST=( --enable-vaapi --enable-vdpau )
         EXTRA_CFLAGS="-O3 -mtune=generic -ftree-vectorize -funroll-loops"
-        EXTRA_LDFLAGS="-Wl,-Bdynamic"
         FFNVCODEC_CFLAG_NEED="-I${DEPENDS_BUILD_PREFIX}/${FFNVCODEC_NAME}/${DEPENDS_BUILD_LOCAL}/include"
 fi
+EXTRA_LDFLAGS="-Wl,-Bdynamic"
 
 echo "FFNVCODEC_CFLAG_NEED = ${FFNVCODEC_CFLAG_NEED}"
 FFNVCODEC_CFLAG="$(pkg-config --cflags ffnvcodec)"

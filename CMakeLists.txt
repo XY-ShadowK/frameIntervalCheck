@@ -70,12 +70,7 @@ add_executable(frameIntervalCheck src/checker.cpp
     src/calculate.cpp
 )
 
-if(WIN32 AND MINGW)
-    target_link_options(frameIntervalCheck PRIVATE
-        -static-libgcc
-        -static-libstdc++
-    )
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set_target_properties(frameIntervalCheck PROPERTIES
         INSTALL_RPATH "$ORIGIN/lib"
     )

@@ -171,6 +171,11 @@ jobs:
         chmod +x ./convert-path-run.sh
         ./convert-path-run.sh "${{ matrix.target }}" ./build.sh
 
+    - name: Collect Release
+      run: |
+        chmod +x ./convert-path-run.sh
+        ./convert-path-run.sh "${{ matrix.target }}" ./collect-release.sh
+
     - name: Get License
       run: |
         chmod +x ./convert-path-run.sh
