@@ -14,4 +14,6 @@ echo "${OPTION_LIST[@]}"
 cmake -B "${BUILD_PATH}" \
 "${OPTION_LIST[@]}" \
 && \
-cmake --build "${BUILD_PATH}" --config Release
+cmake --build "${BUILD_PATH}" --config Release \
+&& \
+cmake --install "${BUILD_PATH}" --prefix "${RELEASE_PATH}"

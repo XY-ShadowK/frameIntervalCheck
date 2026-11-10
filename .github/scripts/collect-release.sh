@@ -1,17 +1,17 @@
 #!/bin/bash
 
-BINARY_PATH="${BUILD_PATH}"
+# BINARY_PATH="${BUILD_PATH}"
 
 if [ "${BUILD_TARGET}" == "windows" ]; then
     SHAREDLIB_LOCAL="bin"
     SHAREDLIB_SUFFIX=".dll"
-    BINARY_SUFFIX=".exe"
+    # BINARY_SUFFIX=".exe"
     SHAREDLIB_PATH_RELEASE="${RELEASE_PATH}"
     mkdir -p "${SHAREDLIB_PATH_RELEASE}"
     else
         SHAREDLIB_LOCAL="lib"
         SHAREDLIB_SUFFIX=".so"
-        BINARY_SUFFIX=""
+        # BINARY_SUFFIX=""
         SHAREDLIB_PATH_RELEASE="${RELEASE_PATH}/${SHAREDLIB_LOCAL}"
         mkdir -p "${SHAREDLIB_PATH_RELEASE}"
 fi
@@ -23,13 +23,13 @@ copy_to_release() {
     cp -v "$1" "${RELEASE_PATH}"
 }
 
-copy_executable_release() {
-    if ! (test "$1"); then
-        exit -1
-    fi
-    local executable_dir="${BINARY_PATH}/$1${BINARY_SUFFIX}"
-    copy_to_release "$executable_dir"
-}
+# copy_executable_release() {
+#     if ! (test "$1"); then
+#         exit -1
+#     fi
+#     local executable_dir="${BINARY_PATH}/$1${BINARY_SUFFIX}"
+#     copy_to_release "$executable_dir"
+# }
 
 generate_sharedlib_pattern_mingw64() {
     sharedlib_pattern="$1-*${SHAREDLIB_SUFFIX}"
@@ -62,7 +62,7 @@ copy_sharedlib_release() {
 
 mkdir -p "$RELEASE_PATH"
 
-copy_executable_release "${PROJECT_NAME}"
+# copy_executable_release "${PROJECT_NAME}"
 
 copy_sharedlib_release "FFMPEG" "libavcodec"
 copy_sharedlib_release "FFMPEG" "libavformat"
@@ -70,7 +70,10 @@ copy_sharedlib_release "FFMPEG" "libavutil"
 copy_sharedlib_release "FFMPEG" "libswresample"
 
 echo "$BUILD_TARGET"
-[ "$BUILD_TARGET" == "windows" ] || \
+[ "$BUILD_TARGET" == "linux" ] && \
+cd "$RELEASE_PATH" && \
+tar -czvf ${GITHUB_WORKSPACE}/build-result-linux.tar.gz -C "${RELEASE_PATH}" * && \
+cp ${GITHUB_WORKSPACE}/build-result-linux.tar.gz "${RELEASE_PATH}/" && \
 return 0
 
 copy_sharedlib_release "MSYS_MINGW64" "libgcc_s_seh"

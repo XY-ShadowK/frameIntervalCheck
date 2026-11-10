@@ -49,6 +49,10 @@ if(FFMPEG_ROOT)
         NAMES avutil
         PATHS ${FFMPEG_ROOT}/lib
     )
+    # find_library(SWRESAMPLE_LIBRARY
+    #     NAMES swresample
+    #     PATHS ${FFMPEG_ROOT}/lib
+    # )
 else()
     message(STATUS "FFMPEG_ROOT not set, automatically finding FFmpeg.")
     find_path(FFMPEG_INCLUDE_DIRS
@@ -67,6 +71,10 @@ else()
         NAMES avutil
         PATHS $ENV{LIB}
     )
+    # find_library(SWRESAMPLE_LIBRARY
+    #     NAMES swresample
+    #     PATHS $ENV{LIB}
+    # )
 endif()
 if(NOT FFMPEG_INCLUDE_DIRS OR NOT AVFORMAT_LIBRARY OR NOT AVCODEC_LIBRARY OR NOT AVUTIL_LIBRARY)
     message(FATAL_ERROR "FFmpeg not configured, please confirm your installation.")
@@ -79,9 +87,16 @@ add_executable(frameIntervalCheck src/checker.cpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # set(INSTALL_LIB_LOCAL "lib" CACHE PATH "Path libraries to install")
     set_target_properties(frameIntervalCheck PROPERTIES
+        BUILD_RPATH "$ORIGIN/lib"
         INSTALL_RPATH "$ORIGIN/lib"
     )
+    target_link_options(frameIntervalCheck PRIVATE
+        "-Wl,--disable-new-dtags"
+    )
+# else()
+#     set(INSTALL_LIB_LOCAL "." CACHE PATH "Path libraries to install")
 endif()
 
 target_include_directories(frameIntervalCheck PRIVATE
@@ -119,3 +134,16 @@ if(MSVC)
         MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
     )
 endif()
+
+install(TARGETS frameIntervalCheck
+    RUNTIME DESTINATION .
+)
+# if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#     install(FILES
+#         ${AVFORMAT_LIBRARY}
+#         ${AVCODEC_LIBRARY}
+#         ${AVUTIL_LIBRARY}
+#         ${SWRESAMPLE_LIBRARY}
+#         DESTINATION ${INSTALL_LIB_LOCAL}
+#     )
+# endif()

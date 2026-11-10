@@ -75,7 +75,7 @@ void parseArgs(int argc, char* argv[]) {
             exit(0);
         }
         if(settings.count("version")) {
-            printf("picOverlay " APP_VERSION "\n");
+            printf("%s " APP_VERSION "\n", options.program().c_str());
             exit(0);
         }
         mutuallyExclusiveCheck({
