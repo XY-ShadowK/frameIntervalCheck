@@ -74,10 +74,8 @@ void parseArgs(int argc, char* argv[]) {
             printf("%s", options.help().c_str());
             exit(0);
         }
-        if(settings.count("version")) {
+        if(settings.count("version"))
             printf("%s " APP_VERSION "\n", options.program().c_str());
-            exit(0);
-        }
         mutuallyExclusiveCheck({
             "file",
             "path"
@@ -119,8 +117,13 @@ UNIVERSE_MAIN
     size_t numError = 0;
     if(settings.count("path"))
         files = getFiles(settings["path"].as<string>(), settings["pattern"].as<string>(), settings["verbose"].as<bool>());
-    else
+    else if(settings.count("file"))
         files = { settings["file"].as<string>() };
+    else if(settings.count("version"))
+        return 0;
+    else
+        return -1;
+
     indexAbnormalArray.reserve(files.size());
     // numAbnormalArray.reserve(files.size());
     for(size_t i = 0;i < files.size();i ++) {

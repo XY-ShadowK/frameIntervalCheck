@@ -6,7 +6,6 @@ else()
     project(frameIntervalCheck VERSION ${APP_VERSION} LANGUAGES CXX)
 endif()
 
-
 add_compile_definitions(CMAKE_BUILD)
 
 set(CMAKE_BUILD_TYPE Release)

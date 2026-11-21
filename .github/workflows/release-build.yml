@@ -78,7 +78,6 @@ jobs:
           git
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-nasm
-          mingw-w64-x86_64-yasm
           mingw-w64-x86_64-pkgconf
           mingw-w64-x86_64-zlib
           mingw-w64-x86_64-make
@@ -268,8 +267,8 @@ jobs:
         mkdir -p "${{ env.TEST_PATH }}"
         tar -xzf "${{ env.RELEASE_PATH }}/build-result-${{ matrix.target }}.${{ matrix.release-suffix }}" -C "${{ env.TEST_PATH }}"
         cd "${{ env.TEST_PATH }}"
-        chmod +x ./"${{ env.PROJECT_NAME }}"
-        output=$(./"${{ env.PROJECT_NAME }}" --version)
+        chmod +x "./${{ env.PROJECT_NAME }}"
+        output="$(./${{ env.PROJECT_NAME }} --version)"
         version="${{ github.ref_name }}"
         if [[ "$version" == v* ]]; then
           version="${version#v}"
@@ -342,6 +341,7 @@ jobs:
       uses: softprops/action-gh-release@v3
       if: github.ref_type == 'tag'
       with:
+        tag_name: ${{ github.ref_name }}
         body: "# ${{ github.ref_name }}"
         preserve_order: true
         working_directory: "${{ env.PACKAGE_PATH }}"
@@ -356,6 +356,7 @@ jobs:
       uses: softprops/action-gh-release@v3
       if: github.ref_type != 'tag'
       with:
+        tag_name: ${{ github.ref_name }}
         body: "# ${{ github.ref_name }}"
         draft: true
         preserve_order: true
