@@ -45,17 +45,18 @@ cmake -B build \
 
 ## 选项列表：
 
-* [`--file`](README-zh_CN.md##--file) : 设置待扫描视频文件名
-* [`--path`](README-zh_CN.md##--path) : 设置批量扫描目录
-* [`--pattern`](README-zh_CN.md##--pattern) : 设置批量扫描文件名通配符模式
-* [`--container-only`](README-zh_CN.md##--container-only) : 开启仅扫描封装模式
-* [`--decode-only`](README-zh_CN.md##--decode-only) : 开启仅解码模式
-* [`--harddware-decode`](README-zh_CN.md##--harddware-decode) : 开启硬件解码（将关闭软解）
-* [`--deviation-rate`](README-zh_CN.md##--deviation-rate) : 设置使用固定容忍率
-* [`--IQR`](README-zh_CN.md##--IQR) : 设置使用四分位距算法
-* [`--MAD`](README-zh_CN.md##--MAD) : 设置使用中位数绝对偏差算法
-* [`--verbose`](README-zh_CN.md##--verbose) : 开启详细信息显示
-* [`-h, --help`](README-zh_CN.md##-h,---help) : 打印帮助信息
+* [`--file`](OPTIONS-zh_CN.md##--file) : 设置待扫描视频文件名
+* [`--path`](OPTIONS-zh_CN.md##--path) : 设置批量扫描目录
+* [`--pattern`](OPTIONS-zh_CN.md##--pattern) : 设置批量扫描文件名通配符模式
+* [`--container-only`](OPTIONS-zh_CN.md##--container-only) : 开启仅扫描封装模式
+* [`--decode-only`](OPTIONS-zh_CN.md##--decode-only) : 开启仅解码模式
+* [`--harddware-decode`](OPTIONS-zh_CN.md##--harddware-decode) : 开启硬件解码（将关闭软解）
+* [`--deviation-rate`](OPTIONS-zh_CN.md##--deviation-rate) : 设置使用固定容忍率
+* [`--IQR`](OPTIONS-zh_CN.md##--IQR) : 设置使用四分位距算法
+* [`--MAD`](OPTIONS-zh_CN.md##--MAD) : 设置使用中位数绝对偏差算法
+* [`--verbose`](OPTIONS-zh_CN.md##--verbose) : 开启详细信息显示
+* [`-v, --version`](OPTIONS-zh_CN.md##-v,---version) : 打印版本信息
+* [`-h, --help`](OPTIONS-zh_CN.md##-h,---help) : 打印帮助信息
 
 ## 输出信息意义
 

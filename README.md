@@ -45,17 +45,18 @@ cmake -B build \
 
 ## Option List:
 
-* [`--file`](README-zh_CN.md##--file) : Set the filename of the video to be scanned
-* [`--path`](README-zh_CN.md##--path) : Set the directory for Batch Scan Mode
-* [`--pattern`](README-zh_CN.md##--pattern) : Set wildcard pattern for filenames in Batch Scan Mode
-* [`--container-only`](README-zh_CN.md##--container-only) : Enable Scan Container Only Mode.
-* [`--decode-only`](README-zh_CN.md##--decode-only) : Enable Decode Only Mode
-* [`--harddware-decode`](README-zh_CN.md##--harddware-decode) : Enable Hardware Decoding (disable Software Decoding)
-* [`--deviation-rate`](README-zh_CN.md##--deviation-rate) : Set using fixed tolerance rate
-* [`--IQR`](README-zh_CN.md##--IQR) : Set using Interquartile Range
-* [`--MAD`](README-zh_CN.md##--MAD) : Set using Median Absolute Deviation
-* [`--verbose`](README-zh_CN.md##--verbose) : Enable print details
-* [`-h, --help`](README-zh_CN.md##-h,---help) : Print help information
+* [`--file`](OPTIONS.md##--file) : Set the filename of the video to be scanned
+* [`--path`](OPTIONS.md##--path) : Set the directory for Batch Scan Mode
+* [`--pattern`](OPTIONS.md##--pattern) : Set wildcard pattern for filenames in Batch Scan Mode
+* [`--container-only`](OPTIONS.md##--container-only) : Enable Scan Container Only Mode.
+* [`--decode-only`](OPTIONS.md##--decode-only) : Enable Decode Only Mode
+* [`--harddware-decode`](OPTIONS.md##--harddware-decode) : Enable Hardware Decoding (disable Software Decoding)
+* [`--deviation-rate`](OPTIONS.md##--deviation-rate) : Set using fixed tolerance rate
+* [`--IQR`](OPTIONS.md##--IQR) : Set using Interquartile Range
+* [`--MAD`](OPTIONS.md##--MAD) : Set using Median Absolute Deviation
+* [`--verbose`](OPTIONS.md##--verbose) : Enable print details
+* [`-v, -version`](OPTIONS.md##-v,---version) : Print version information
+* [`-h, --help`](OPTIONS.md##-h,---help) : Print help information
 
 ## Meaning of Output information
 

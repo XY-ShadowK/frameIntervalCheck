@@ -79,6 +79,10 @@ Specify using the Median Absolute Deviation to calculate the tolerance deviation
 
 Enable print details.
 
+## `-v, --version`
+
+Print Version information.
+
 ## `-h, --help`
 
 Print help information.
