@@ -273,8 +273,8 @@ jobs:
         version="${{ github.ref_name }}"
         if [[ "$version" == v* ]]; then
           version="${version#v}"
-        else
-          version="undefined"
+          else
+            version="undefined"
         fi
         echo "$output"
         echo "${{ env.PROJECT_NAME }} ${version}"
