@@ -15,10 +15,12 @@ env:
   BUILD_PATH: ${{ github.workspace }}/release-build
   RELEASE_PATH: ${{ github.workspace }}/release
   GPG_SIGN_SUFFIX: sig
+  BUILD_RESULT_PREFIX: build-result
+  RELEASE_RESULT_PREFIX: release-result
   
 jobs:
   build:
-    name: Release Build (${{ matrix.target }}) 
+    name: Release Build (${{ matrix.os }}) 
     runs-on: ${{ matrix.os }}
 
     env:
@@ -44,21 +46,21 @@ jobs:
       fail-fast: false
 
       matrix:
+        os: [windows-2022, ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
         include:
-          - target: windows
-            os: windows-latest
-            shell: 'msys2 {0}'
-            build_type: Release
-            crt: MINGW64
-            c_compiler: cl
-            cpp_compiler: cl
           - target: linux
-            os: ubuntu-latest
+            # os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
             shell: bash
-            build_type: Release
             crt: ''
-            c_compiler: gcc
-            cpp_compiler: g++
+            # c_compiler: gcc
+            # cpp_compiler: g++
+          - target: windows
+            os: windows-2022
+            shell: 'msys2 {0}'
+            crt: MINGW64
+            env_crt: x86_64
+            # c_compiler: cl
+            # cpp_compiler: cl
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -76,12 +78,12 @@ jobs:
         install: >-
           base-devel
           git
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-nasm
-          mingw-w64-x86_64-pkgconf
-          mingw-w64-x86_64-zlib
-          mingw-w64-x86_64-make
-          mingw-w64-x86_64-cmake
+          mingw-w64-${{ matrix.env_crt }}-toolchain
+          mingw-w64-${{ matrix.env_crt }}-nasm
+          mingw-w64-${{ matrix.env_crt }}-pkgconf
+          mingw-w64-${{ matrix.env_crt }}-zlib
+          mingw-w64-${{ matrix.env_crt }}-make
+          mingw-w64-${{ matrix.env_crt }}-cmake
           autoconf automake libtool
 
     - name: Setup Linux
@@ -118,16 +120,16 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}
-        key: ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_PATH), format('{0}/{1}/pre-build-header-only-branch.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
+        key: ffnvcodec-${{ matrix.os }}-${{ env.FFNVCODEC_TAG }}-${{ hashFiles(format('{0}/pre-build.sh', env.SCRIPTS_PATH), format('{0}/{1}/pre-build-header-only-branch.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
         restore-keys: |
-          ffnvcodec-${{ matrix.target }}-${{ env.FFNVCODEC_TAG }}-
+          ffnvcodec-${{ matrix.os }}-${{ env.FFNVCODEC_TAG }}-
 
     - name: FFmpeg Cache
       id: cache-ffmpeg
       uses: actions/cache@v5
       with:
         path: ${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}
-        key: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/{1}/pre-build-ffmpeg.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
+        key: ffmpeg-${{ matrix.os }}-${{ env.FFMPEG_TAG }}-${{ hashFiles(format('{0}/{1}/pre-build-ffmpeg.sh', env.SCRIPTS_PATH, env.PRE_BUILD_SCRIPTS_LOCAL)) }}
 
     - name: Test WindowsRub Installed
       if: steps.cache-windowsRub.outputs.cache-hit != 'true'
@@ -149,7 +151,7 @@ jobs:
       if: steps.cache-ffnvcodec.outputs.cache-hit != 'true'
       run: |
         chmod +x ./convert-path-run.sh
-        ./convert-path-run.sh "${{ matrix.target }}" "
+        ./convert-path-run.sh "${{ matrix.os }}" "
         source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFNVCODEC_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}\" ffnvcodec FFNVCODEC_NEED_INSTALL
         "
 
@@ -157,7 +159,7 @@ jobs:
       if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
       run: |
         chmod +x ./convert-path-run.sh
-        ./convert-path-run.sh "${{ matrix.target }}" "
+        ./convert-path-run.sh "${{ matrix.os }}" "
         source ./dependency-cache-check.sh \"${{ env.DEPENDS_BUILD_PREFIX }}/${{ env.FFMPEG_NAME }}/${{ env.DEPENDS_BUILD_LOCAL }}\" ffmpeg FFMPEG_NEED_INSTALL
         "
 
@@ -184,19 +186,17 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: build-result-${{ matrix.target }}
+        name: ${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.os }}
         path: |
           ${{ env.RELEASE_PATH }}
         retention-days: 7
         if-no-files-found: error
 
-  test-and-publish:
+  test:
     needs: build
-    name: Test and Publish (${{ matrix.target }})
+    name: Test Release (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     environment: PUBLISH
-    permissions:
-      contents: write
 
     env:
       TEST_PATH: ${{ github.workspace }}/test
@@ -206,15 +206,16 @@ jobs:
       fail-fast: false
 
       matrix:
+        os: [windows-2022, ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
         include:
-          - target: windows
-            os: windows-latest
-            shell: pwsh
-            release-suffix: zip
           - target: linux
-            os: ubuntu-latest
+            # os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
             shell: bash
             release-suffix: tar.gz
+          - target: windows
+            os: windows-2022
+            shell: pwsh
+            release-suffix: zip
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -238,7 +239,7 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v5
       with:
-        name: build-result-${{ matrix.target }}
+        name: ${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.os }}
         path: ${{ env.RELEASE_PATH }}
     
     - name: Test Build (Windows)
@@ -265,7 +266,7 @@ jobs:
       if: matrix.target == 'linux'
       run: |
         mkdir -p "${{ env.TEST_PATH }}"
-        tar -xzf "${{ env.RELEASE_PATH }}/build-result-${{ matrix.target }}.${{ matrix.release-suffix }}" -C "${{ env.TEST_PATH }}"
+        tar -xzf "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-suffix }}" -C "${{ env.TEST_PATH }}"
         cd "${{ env.TEST_PATH }}"
         chmod +x "./${{ env.PROJECT_NAME }}"
         output="$(./${{ env.PROJECT_NAME }} --version)"
@@ -293,7 +294,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path "${{ env.PACKAGE_PATH }}"
         Set-Location "${{ env.PACKAGE_PATH }}"
-        Compress-Archive -Path "${{ env.RELEASE_PATH }}" -DestinationPath "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}"
+        Compress-Archive -Path "${{ env.RELEASE_PATH }}" -DestinationPath "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
         git archive --format=${{ matrix.release-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
         $keyFile = [System.IO.Path]::GetTempFileName()
         Set-Content -Path $keyFile -Value "${{ env.GPG_PRIVATE_KEY }}"
@@ -304,7 +305,7 @@ jobs:
           '--local-user', "${{ env.GPG_EMAIL }}",
           '--passphrase', "${{ env.GPG_PASSPHRASE }}",
           '--detach-sign',
-          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
         )
         gpg $gpgArgs
         $gpgArgs[-1] = "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
@@ -320,7 +321,7 @@ jobs:
       run: |
         mkdir -p "${{ env.PACKAGE_PATH }}"
         cd "${{ env.PACKAGE_PATH }}"
-        mv "${{ env.RELEASE_PATH }}/build-result-${{ matrix.target }}.${{ matrix.release-suffix }}" "${{ env.PACKAGE_PATH }}/${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}"
+        mv "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-suffix }}" "${{ env.PACKAGE_PATH }}/${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
         git archive --format=${{ matrix.release-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
         echo "${GPG_PRIVATE_KEY}" > key.txt
         gpg --batch --import key.txt
@@ -330,12 +331,50 @@ jobs:
           '--local-user' "${{ env.GPG_EMAIL }}"
           '--passphrase' "${{ env.GPG_PASSPHRASE }}"
           '--detach-sign'
-          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
         )
         gpg "${gpgArgs[@]}"
         gpgArgs[-1]="${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
         gpg "${gpgArgs[@]}"
-          
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.RELEASE_RESULT_PREFIX }}-${{ matrix.os }}
+        path: |
+          ${{ env.PACKAGE_PATH }}
+        retention-days: 7
+        if-no-files-found: error
+
+  publish:
+    needs: test
+    name: Publish Release
+    runs-on: ubuntu-latest
+    environment: PUBLISH
+    permissions:
+      contents: write
+
+    env:
+      RELEASE_ARCHIVE_SUFFIX1: tar.gz
+      RELEASE_ARCHIVE_SUFFIX2: zip
+
+    strategy:
+      fail-fast: false
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v5
+      with:
+        pattern: ${{ env.RELEASE_RESULT_PREFIX }}-*
+        merge-multiple: true
+        path: ${{ runner.temp }}/publish
 
     - name: Publish Release
       uses: softprops/action-gh-release@v3
@@ -344,13 +383,13 @@ jobs:
         tag_name: ${{ github.ref_name }}
         body: "# ${{ github.ref_name }}"
         preserve_order: true
-        working_directory: "${{ env.PACKAGE_PATH }}"
+        working_directory: "${{ runner.temp }}/publish"
         generate_release_notes: true
         files: |
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}.${{ env.GPG_SIGN_SUFFIX }}
-          ${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}
-          ${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}.${{ env.GPG_SIGN_SUFFIX }}
 
     - name: Publish Release (Test)
       uses: softprops/action-gh-release@v3
@@ -360,10 +399,10 @@ jobs:
         body: "# ${{ github.ref_name }}"
         draft: true
         preserve_order: true
-        working_directory: "${{ env.PACKAGE_PATH }}"
+        working_directory: "${{ runner.temp }}/publish"
         generate_release_notes: true
         files: |
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.target }}.${{ matrix.release-suffix }}.${{ env.GPG_SIGN_SUFFIX }}
-          ${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}
-          ${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}.${{ env.GPG_SIGN_SUFFIX }}

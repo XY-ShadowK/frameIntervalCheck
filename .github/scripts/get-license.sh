@@ -213,16 +213,18 @@ if [ $BUILD_TARGET == "windows" ]; then
     collect_echo_component_notice_msys2 \
         mingw-w64-x86_64-libstdc++
     else
+        set -x
         for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
             [ -f "$f" ] && \
             sudo sed -i '/^deb\b/{p;s/^deb/deb-src/}' "$f"
-        done && \
+        done
         for f in /etc/apt/sources.list.d/*.sources; do
             [ -f "$f" ] && \
             sudo sed -i 's/^Types: deb$/Types: deb deb-src/' "$f"
-        done && \
+        done
         sudo apt-get update || \
         exit -4
+        set +x
         collect_echo_component_notice_linux \
             zlib1g-dev
         collect_echo_component_notice_linux \

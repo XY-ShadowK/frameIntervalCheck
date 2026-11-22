@@ -49,7 +49,7 @@ copy_sharedlib_release() {
         if [ "$1" == "FFMPEG" ]; then
             generate_sharedlib_pattern_mingw64 "${2#lib}"
         elif [ "$2" == "zlib" ]; then
-            sharedlib_pattern="$2*${SHAREDLIB_SUFFIX}"
+            sharedlib_pattern="libz-*${SHAREDLIB_SUFFIX}"
             else
                 generate_sharedlib_pattern_mingw64 "$2"
         fi

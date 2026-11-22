@@ -14,12 +14,7 @@ if [ "$BUILD_TARGET" == "windows" ]; then
 fi
 EXTRA_LDFLAGS="-Wl,-Bdynamic"
 
-echo "FFNVCODEC_CFLAG_NEED = ${FFNVCODEC_CFLAG_NEED}"
-FFNVCODEC_CFLAG="$(pkg-config --cflags ffnvcodec)"
-echo "pkg-config: FFNVCODEC_CFLAG = ${FFNVCODEC_CFLAG}"
-[ "$FFNVCODEC_CFLAG" == "$FFNVCODEC_CFLAG_NEED" ] || \
-exit -7
-echo "pkg-config find right ffnvcodec."
+source ./pre-check-ffmpeg.sh
 
 ffmpeg_build_path="${DEPENDS_BUILD_PREFIX}/${FFMPEG_NAME}/${DEPENDS_BUILD_LOCAL}" && \
  \
