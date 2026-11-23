@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 set(APP_VERSION "undefined" CACHE STRING "Application version string")
 if(APP_VERSION MATCHES "^v")
+    string(REPLACE "v" "" APP_VERSION "${APP_VERSION}")
     project(frameIntervalCheck VERSION ${APP_VERSION} LANGUAGES CXX)
 else()
     project(frameIntervalCheck LANGUAGES CXX)

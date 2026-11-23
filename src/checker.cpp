@@ -52,14 +52,14 @@ bool mutuallyExclusiveCheck(const vector<string>& optionNames, void(*callback)(c
     return true;
 }
 
-void parseArgs(int argc, char* argv[]) {
+void parseArgs(int argc, char* const* const argv) {
     try {
         options
         .set_width(140)
         .add_options()
             ("file", "文件名", cxxopts::value<string>(), "FILE")
             ("path", "扫描路径（与file冲突）", cxxopts::value<string>(), "PATH")
-            ("pattern", "扫描匹配模式（必须启用file）", cxxopts::value<string>()->default_value("*.mp4"), "PATTERN")
+            ("pattern", "扫描匹配模式（必须启用path）", cxxopts::value<string>()->default_value("*.mp4"), "PATTERN")
             ("container-only", "仅扫描封装帧信息", cxxopts::value<int>()->default_value("0")->implicit_value(to_string((int)PTS_GET_WAY::SOFTWARE_DECODE), cxxopts::ImplicitArgPolicy::Disabled), " ")
             ("decode-only", "仅解码获取帧信息", cxxopts::value<int>()->default_value("0")->implicit_value(to_string((int)PTS_GET_WAY::CONTAINER), cxxopts::ImplicitArgPolicy::Disabled), " ")
             ("hardware-decode", "启用硬件解码（将会关闭软解）", cxxopts::value<int>()->default_value("0")->implicit_value(to_string((int)PTS_GET_WAY::HARDWARE_DECODE), cxxopts::ImplicitArgPolicy::Disabled), " ")
@@ -82,7 +82,7 @@ void parseArgs(int argc, char* argv[]) {
         });
         if(settings.count("pattern"))
             if(!settings.count("path")) {
-                cerr<<"缺少选项 file。"<<endl;
+                cerr<<"缺少选项 path。"<<endl;
                 exit(-1);
             }
         optGetPTS ^= settings["container-only"].as<int>() ^ settings["decode-only"].as<int>() ^ settings["hardware-decode"].as<int>();
