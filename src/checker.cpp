@@ -53,7 +53,7 @@ bool mutuallyExclusiveCheck(const vector<string>& optionNames, void(*callback)(c
     return true;
 }
 
-void parseArgs(int argc, char* const* const argv) {
+int parseArgs(int argc, char* const* const argv) {
     try {
         options
         .set_width(140)
@@ -73,7 +73,7 @@ void parseArgs(int argc, char* const* const argv) {
         settings = options.parse(argc, argv);
         if(argc == 1 || settings.count("help")) {
             printf("%s", options.help().c_str());
-            exit(0);
+            return 1;
         }
         if(settings.count("version"))
             printf("%s " APP_VERSION "\n", options.program().c_str());
@@ -84,7 +84,7 @@ void parseArgs(int argc, char* const* const argv) {
         if(settings.count("pattern"))
             if(!settings.count("path")) {
                 cerr<<"缺少选项 path。"<<endl;
-                exit(-1);
+                return -1;
             }
         optGetPTS ^= settings["container-only"].as<int>() ^ settings["decode-only"].as<int>() ^ settings["hardware-decode"].as<int>();
         mutuallyExclusiveCheck({
@@ -97,17 +97,17 @@ void parseArgs(int argc, char* const* const argv) {
         });
         if(settings.unmatched().size()) {
             cerr<<settings.unmatched()[0]<<" 不是可识别的选项或参数。"<<endl;
-            exit(-1);
+            return -1;
         }
     } catch (const cxxopts::exceptions::exception& e)
     {
         cerr<<"error parsing options: "<<e.what()<<endl;
-        exit(-1);
+        return -1;
     }
+    return 0;
 }
 
-UNIVERSE_MAIN
-    parseArgs(argc, argv);
+int resolve() {
     vector<string> files;
     vector<int64_t> ptsArray;
     vector<size_t> indexAbnormalArray;
@@ -150,4 +150,15 @@ UNIVERSE_MAIN
     }
     printf("\n共扫描 %" PRIu64 " 个文件，共 %" PRIu64 " 个获取帧信息失败，共 %" PRIu64 " 个存在异常帧间隔。\n",files.size(), numError, indexAbnormalArray.size());
     return 0;
+}
+
+UNIVERSE_MAIN
+    int ret = 0;
+    if((ret = parseArgs(argc, argv)) == 0) {
+        UNIVERSE_MAIN_RETURN(resolve());
+    }
+    if(ret < 0) {
+        UNIVERSE_MAIN_RETURN(ret);
+    }
+    UNIVERSE_MAIN_RETURN(0);
 UNIVERSE_MAINEND
