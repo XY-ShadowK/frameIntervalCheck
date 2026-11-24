@@ -4,14 +4,14 @@
 
 if [ "${BUILD_TARGET}" == "windows" ]; then
     SHAREDLIB_LOCAL="bin"
-    SHAREDLIB_SUFFIX=".dll"
-    # BINARY_SUFFIX=".exe"
+    SHAREDLIB_EXTENSION=".dll"
+    # BINARY_EXTENSION=".exe"
     SHAREDLIB_PATH_RELEASE="${RELEASE_PATH}"
     mkdir -p "${SHAREDLIB_PATH_RELEASE}"
     else
         SHAREDLIB_LOCAL="lib"
-        SHAREDLIB_SUFFIX=".so"
-        # BINARY_SUFFIX=""
+        SHAREDLIB_EXTENSION=".so"
+        # BINARY_EXTENSION=""
         SHAREDLIB_PATH_RELEASE="${RELEASE_PATH}/${SHAREDLIB_LOCAL}"
         mkdir -p "${SHAREDLIB_PATH_RELEASE}"
 fi
@@ -27,16 +27,16 @@ copy_to_release() {
 #     if ! (test "$1"); then
 #         exit -1
 #     fi
-#     local executable_dir="${BINARY_PATH}/$1${BINARY_SUFFIX}"
+#     local executable_dir="${BINARY_PATH}/$1${BINARY_EXTENSION}"
 #     copy_to_release "$executable_dir"
 # }
 
 generate_sharedlib_pattern_mingw64() {
-    sharedlib_pattern="$1-*${SHAREDLIB_SUFFIX}"
+    sharedlib_pattern="$1-*${SHAREDLIB_EXTENSION}"
 }
 
 generate_sharedlib_pattern_linux() {
-    sharedlib_pattern="$1${SHAREDLIB_SUFFIX}*"
+    sharedlib_pattern="$1${SHAREDLIB_EXTENSION}*"
 }
 
 copy_sharedlib_release() {
@@ -49,7 +49,7 @@ copy_sharedlib_release() {
         if [ "$1" == "FFMPEG" ]; then
             generate_sharedlib_pattern_mingw64 "${2#lib}"
         elif [ "$2" == "zlib" ]; then
-            sharedlib_pattern="libz-*${SHAREDLIB_SUFFIX}"
+            sharedlib_pattern="libz-*${SHAREDLIB_EXTENSION}"
             else
                 generate_sharedlib_pattern_mingw64 "$2"
         fi

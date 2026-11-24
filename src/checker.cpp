@@ -5,6 +5,7 @@
 #endif
 
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <unordered_map>
 #include <cinttypes>
@@ -124,6 +125,7 @@ UNIVERSE_MAIN
     else
         return -1;
 
+    printf("\n");
     indexAbnormalArray.reserve(files.size());
     // numAbnormalArray.reserve(files.size());
     for(size_t i = 0;i < files.size();i ++) {

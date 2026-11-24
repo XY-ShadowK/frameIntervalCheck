@@ -203,11 +203,11 @@ jobs:
           - target: linux
             # os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
             shell: bash
-            release-suffix: tar.gz
+            release-extension: tar.gz
           - target: windows
             os: windows-2022
             shell: pwsh
-            release-suffix: zip
+            release-extension: zip
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -258,7 +258,7 @@ jobs:
       if: matrix.target == 'linux'
       run: |
         mkdir -p "${{ env.TEST_PATH }}"
-        tar -xzf "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-suffix }}" -C "${{ env.TEST_PATH }}"
+        tar -xzf "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-extension }}" -C "${{ env.TEST_PATH }}"
         cd "${{ env.TEST_PATH }}"
         chmod +x "./${{ env.PROJECT_NAME }}"
         output="$(./${{ env.PROJECT_NAME }} --version)"

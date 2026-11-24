@@ -14,7 +14,7 @@ env:
   DEPENDS_BUILD_LOCAL: build
   BUILD_PATH: ${{ github.workspace }}/release-build
   RELEASE_PATH: ${{ github.workspace }}/release
-  GPG_SIGN_SUFFIX: sig
+  GPG_SIGN_EXTENSION: sig
   BUILD_RESULT_PREFIX: build-result
   RELEASE_RESULT_PREFIX: release-result
   
@@ -211,11 +211,11 @@ jobs:
           - target: linux
             # os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm]
             shell: bash
-            release-suffix: tar.gz
+            release-extension: tar.gz
           - target: windows
             os: windows-2022
             shell: pwsh
-            release-suffix: zip
+            release-extension: zip
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -266,7 +266,7 @@ jobs:
       if: matrix.target == 'linux'
       run: |
         mkdir -p "${{ env.TEST_PATH }}"
-        tar -xzf "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-suffix }}" -C "${{ env.TEST_PATH }}"
+        tar -xzf "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-extension }}" -C "${{ env.TEST_PATH }}"
         cd "${{ env.TEST_PATH }}"
         chmod +x "./${{ env.PROJECT_NAME }}"
         output="$(./${{ env.PROJECT_NAME }} --version)"
@@ -294,8 +294,8 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path "${{ env.PACKAGE_PATH }}"
         Set-Location "${{ env.PACKAGE_PATH }}"
-        Compress-Archive -Path "${{ env.RELEASE_PATH }}" -DestinationPath "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
-        git archive --format=${{ matrix.release-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
+        Compress-Archive -Path "${{ env.RELEASE_PATH }}" -DestinationPath "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-extension }}"
+        git archive --format=${{ matrix.release-extension }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-extension }}"
         $keyFile = [System.IO.Path]::GetTempFileName()
         Set-Content -Path $keyFile -Value "${{ env.GPG_PRIVATE_KEY }}"
         gpg --batch --import $keyFile
@@ -305,10 +305,10 @@ jobs:
           '--local-user', "${{ env.GPG_EMAIL }}",
           '--passphrase', "${{ env.GPG_PASSPHRASE }}",
           '--detach-sign',
-          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-extension }}"
         )
         gpg $gpgArgs
-        $gpgArgs[-1] = "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
+        $gpgArgs[-1] = "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-extension }}"
         gpg $gpgArgs
           
 
@@ -321,8 +321,8 @@ jobs:
       run: |
         mkdir -p "${{ env.PACKAGE_PATH }}"
         cd "${{ env.PACKAGE_PATH }}"
-        mv "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-suffix }}" "${{ env.PACKAGE_PATH }}/${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
-        git archive --format=${{ matrix.release-suffix }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
+        mv "${{ env.RELEASE_PATH }}/${{ env.BUILD_RESULT_PREFIX }}-${{ matrix.target }}.${{ matrix.release-extension }}" "${{ env.PACKAGE_PATH }}/${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-extension }}"
+        git archive --format=${{ matrix.release-extension }} --prefix="${{ env.PROJECT_NAME }}-${{ github.ref_name }}/" HEAD -o "${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-extension }}"
         echo "${GPG_PRIVATE_KEY}" > key.txt
         gpg --batch --import key.txt
         rm -f key.txt
@@ -331,10 +331,10 @@ jobs:
           '--local-user' "${{ env.GPG_EMAIL }}"
           '--passphrase' "${{ env.GPG_PASSPHRASE }}"
           '--detach-sign'
-          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-suffix }}"
+          "${{ env.PROJECT_NAME }}-${{ github.ref_name }}-${{ matrix.os }}.${{ matrix.release-extension }}"
         )
         gpg "${gpgArgs[@]}"
-        gpgArgs[-1]="${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-suffix }}"
+        gpgArgs[-1]="${{ env.PROJECT_NAME}}-${{ github.ref_name }}.${{ matrix.release-extension }}"
         gpg "${gpgArgs[@]}"
 
     - name: Upload Artifact
@@ -355,8 +355,8 @@ jobs:
       contents: write
 
     env:
-      RELEASE_ARCHIVE_SUFFIX1: tar.gz
-      RELEASE_ARCHIVE_SUFFIX2: zip
+      RELEASE_ARCHIVE_EXTENSION1: tar.gz
+      RELEASE_ARCHIVE_EXTENSION2: zip
 
     strategy:
       fail-fast: false
@@ -386,10 +386,10 @@ jobs:
         working_directory: "${{ runner.temp }}/publish"
         generate_release_notes: true
         files: |
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}.${{ env.GPG_SIGN_SUFFIX }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION1 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION1 }}.${{ env.GPG_SIGN_EXTENSION }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION2 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION2 }}.${{ env.GPG_SIGN_EXTENSION }}
 
     - name: Publish Release (Test)
       uses: softprops/action-gh-release@v3
@@ -402,7 +402,7 @@ jobs:
         working_directory: "${{ runner.temp }}/publish"
         generate_release_notes: true
         files: |
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX1 }}.${{ env.GPG_SIGN_SUFFIX }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}
-          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_SUFFIX2 }}.${{ env.GPG_SIGN_SUFFIX }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION1 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION1 }}.${{ env.GPG_SIGN_EXTENSION }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION2 }}
+          ${{ env.PROJECT_NAME }}-${{ github.ref_name }}-*.${{ env.RELEASE_ARCHIVE_EXTENSION2 }}.${{ env.GPG_SIGN_EXTENSION }}

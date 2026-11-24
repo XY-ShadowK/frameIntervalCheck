@@ -8,9 +8,9 @@ mkdir -p "$LICENSE_LOCAL"
 
 MSYS2_MINGW64_PREIFX="mingw-w64-x86_64-"
 MSYS2_SOURCE_REPO_PREFIX="https://repo.msys2.org/mingw/sources/mingw-w64-"
-MSYS2_SOURCE_REPO_SUFFIX=".src.tar.zst"
+MSYS2_SOURCE_REPO_EXTENSION=".src.tar.zst"
 MSYS2_MINGW64_REPO_PREFIX="https://repo.msys2.org/mingw/mingw64"
-MSYS2_MINGW64_REPO_PACKAGE_SUFFIX="-any.pkg.tar.zst"
+MSYS2_MINGW64_REPO_PACKAGE_EXTENSION="-any.pkg.tar.zst"
 
 # declare -A LINUX_PKG_NAME=(
 #     [zlib1g-dev]="zlib"
@@ -89,11 +89,11 @@ collect_echo_component_notice_github() {
 }
 
 collect_echo_component_notice_msys2_source() {
-    package_source="${MSYS2_SOURCE_REPO_PREFIX}${package_name}-${package_version}${MSYS2_SOURCE_REPO_SUFFIX}"
+    package_source="${MSYS2_SOURCE_REPO_PREFIX}${package_name}-${package_version}${MSYS2_SOURCE_REPO_EXTENSION}"
 }
 
 collect_echo_component_notice_msys2_mingw64() {
-    package_source="${MSYS2_MINGW64_REPO_PREFIX}/${package_name}-${package_version}${MSYS2_MINGW64_REPO_PACKAGE_SUFFIX}"
+    package_source="${MSYS2_MINGW64_REPO_PREFIX}/${package_name}-${package_version}${MSYS2_MINGW64_REPO_PACKAGE_EXTENSION}"
 }
 
 collect_echo_component_notice_msys2() {

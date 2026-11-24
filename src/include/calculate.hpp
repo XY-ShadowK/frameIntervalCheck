@@ -6,6 +6,7 @@ time: 2026/11/1 14:39:06
 #define _CALCULATE_HPP_
 
 #include <vector>
+#include <cinttypes>
 
 enum class TOLERATED_DEVIATION_GET_WAY {
     FIXED = 0b1,

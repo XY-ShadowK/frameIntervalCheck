@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <functional>
 #include <map>
-#include <cinttypes>
 
 #include "include/calculate.hpp"
 
