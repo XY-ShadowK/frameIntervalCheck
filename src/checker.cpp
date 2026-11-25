@@ -20,8 +20,6 @@
 using std::string;
 using std::to_string;
 using std::vector;
-using std::cerr;
-using std::endl;
 
 std::unordered_map<string, int> optionMasks = {
     {"deviation-rate", (int)TOLERATED_DEVIATION_GET_WAY::FIXED},
@@ -41,7 +39,7 @@ bool mutuallyExclusiveCheck(const vector<string>& optionNames, void(*callback)(c
     for(const string& optionName : optionNames) {
         if(settings.count(optionName)) {
             if(isMutuallyExclusive) {
-                cerr<<"不可同时设置 "<<listName<<" 。"<<endl;
+                fprintf(stderr, "不可同时设置 %s 。\n", listName.c_str());
                 return false;
             }
             if(callback)
@@ -83,7 +81,7 @@ int parseArgs(int argc, char* const* const argv) {
         });
         if(settings.count("pattern"))
             if(!settings.count("path")) {
-                cerr<<"缺少选项 path。"<<endl;
+                fprintf(stderr, "缺少选项 path。\n");
                 return -1;
             }
         optGetPTS ^= settings["container-only"].as<int>() ^ settings["decode-only"].as<int>() ^ settings["hardware-decode"].as<int>();
@@ -96,12 +94,12 @@ int parseArgs(int argc, char* const* const argv) {
             optGetBase = optionMasks[optionName];
         });
         if(settings.unmatched().size()) {
-            cerr<<settings.unmatched()[0]<<" 不是可识别的选项或参数。"<<endl;
+            fprintf(stderr, "%s 不是可识别的选项或参数。\n", settings.unmatched()[0].c_str());
             return -1;
         }
     } catch (const cxxopts::exceptions::exception& e)
     {
-        cerr<<"error parsing options: "<<e.what()<<endl;
+        fprintf(stderr, "error parsing options: %s\n", e.what());
         return -1;
     }
     return 0;
@@ -134,7 +132,7 @@ int resolve() {
         if(getPTSArray(ptsArray, file, optGetPTS, settings["verbose"].as<bool>())) {
             timeBase = getTimeBase(file);
             resultPTSTest = findBase(ptsArray, settings["deviation-rate"].as<long double>(), optGetBase, settings["verbose"].as<bool>());
-            // cerr<<testPreProcess(ptsArray)<<endl;
+            // printf("%d\n", testPreProcess(ptsArray));
             temp = resultPTSTest.numOutlierLeft + resultPTSTest.numOutlierRight;
             if(temp) {
                 indexAbnormalArray.emplace_back(i);

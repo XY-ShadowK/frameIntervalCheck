@@ -11,9 +11,9 @@ extern "C" {
 
 #include "include/ffutils.hpp"
 
-const long double E_6 = 1e6;
-const int64_t defaultAverageFPS = 30LL;
-const size_t defaultNumFrame = 1000;
+static const long double E_6 = 1e6;
+static const int64_t defaultAverageFPS = 30LL;
+static const size_t defaultNumFrame = 1000;
 
 int64_t getRoughNumFrame(const AVStream* const videoStream, const int64_t& duration) {
     if(videoStream->nb_frames > 0)

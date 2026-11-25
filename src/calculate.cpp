@@ -45,7 +45,7 @@ T getMidInRange(const vector<T>& sortedArray, const size_t& indexLeft, const siz
 }
 
 static uint64_t preProcess(const vector<int64_t>& sumDisplacementArray) {
-    size_t length = sumDisplacementArray.size() - 1;
+    const size_t length = sumDisplacementArray.size() - 1;
     initDisplacements(length);
     for(size_t i = 0;i < length;i ++)
         displacementArray[i] = sumDisplacementArray[i + 1] - sumDisplacementArray[i];
@@ -81,10 +81,10 @@ ResultBase iterateBase(const uint64_t& initialBase
 , bool (*checkOutlierRight)(const uint64_t&, const uint64_t&, const uint64_t&)
 , const bool isVerbose = false) {
     uint64_t base = initialBase, valueDeviation;
-    size_t indexUniqueLeft = 1, lengthUniqueRight = sumSortedDisplacementArray.size(), lastIndexUniqueLeft, lastSizeUniqueRight;
+    size_t indexUniqueLeft = 1, lengthUniqueRight = sumSortedDisplacementArray.size(), lastIndexUniqueLeft, lastLengthUniqueRight;
     while(indexUniqueLeft < lengthUniqueRight) {
         lastIndexUniqueLeft = indexUniqueLeft;
-        lastSizeUniqueRight = lengthUniqueRight;
+        lastLengthUniqueRight = lengthUniqueRight;
         valueDeviation = getNextDeviation(base, indexUniqueLeft, lengthUniqueRight);
         if(isVerbose)
             fprintf(stdout, "base = %" PRIu64 ", deviation = %" PRIu64 ", left = %" PRIu64 " | %" PRIu64 ", right = %" PRIu64 " | %" PRIu64 "\n", base, valueDeviation, indexUniqueLeft, sortedUniqueDisplacementArray[indexUniqueLeft], lengthUniqueRight, sortedUniqueDisplacementArray[lengthUniqueRight - 1]);
@@ -93,7 +93,7 @@ ResultBase iterateBase(const uint64_t& initialBase
         while(checkOutlierRight(base, sortedUniqueDisplacementArray[lengthUniqueRight - 1], valueDeviation))
             lengthUniqueRight --;
         // 不能提到while条件处，需要的是无剔除的base，而不是无剔除后再算出来的base
-        if(indexUniqueLeft == lastIndexUniqueLeft && lengthUniqueRight == lastSizeUniqueRight)
+        if(indexUniqueLeft == lastIndexUniqueLeft && lengthUniqueRight == lastLengthUniqueRight)
             break;
         // 相信编译器的优化OVO
         base = (sumSortedDisplacementArray[lengthUniqueRight - 1] - sumSortedDisplacementArray[indexUniqueLeft - 1]) / (long double)(sumNumUniqueDisplacementArray[lengthUniqueRight - 1] - sumNumUniqueDisplacementArray[indexUniqueLeft - 1]) + 0.5L;
