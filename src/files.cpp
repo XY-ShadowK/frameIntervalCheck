@@ -2,11 +2,15 @@
 #include <filesystem>
 #include <regex>
 
+#include "File_Utils.hpp"
+
 #include "include/files.hpp"
 
 using std::vector;
 using std::string;
 using std::regex;
+using WindowsRub::File::FilePath;
+using WindowsRub::File::getFilePathU8;
 
 regex wildcard2Regex(const std::string& pattern) {
     string strRegex;
@@ -20,10 +24,11 @@ regex wildcard2Regex(const std::string& pattern) {
     return regex(strRegex, regex::icase);
 }
 
-vector<string> getFiles(const string& path, const string& pattern
+vector<string> getFiles(const string& pathStr, const string& pattern
 , const bool isVerbose) {
+	FilePath path = getFilePathU8(pathStr);
 	if(!std::filesystem::exists(path)) {
-		fprintf(stderr, "%s not exists.\n", path.c_str());
+		fprintf(stderr, "%s not exists.\n", pathStr.c_str());
 		return {};
 	}
 	if(isVerbose)

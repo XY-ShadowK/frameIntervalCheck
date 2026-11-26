@@ -24,22 +24,22 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      WINDOWSRUB_NAME: windowsRub
-      CXXOPTS_NAME: cxxopts
-      FFNVCODEC_NAME: nv-codec-headers
-      FFMPEG_NAME: FFmpeg
-      WINDOWSRUB_COMMIT: 4dcbbf305be2ce9536929e719c8026297607a1db
-      CXXOPTS_COMMIT: ad6e41343d4ed239c6579a8e87c0a66b709d04be
-      FFNVCODEC_TAG: n12.1.14.1
-      FFMPEG_TAG: n8.1.3
-      WINDOWSRUB_REPO: https://github.com/XY-ShadowK/windowsRub.git
-      CXXOPTS_REPO: https://github.com/jarro2783/cxxopts.git
-      FFNVCODEC_REPO: https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
-      FFMPEG_REPO: https://github.com/FFmpeg/FFmpeg.git
-      WINDOWSRUB_LICENSE: Mozilla Public License 2.0
-      CXXOPTS_LICENSE: MIT License
-      FFNVCODEC_LICENSE: MIT License
-      FFMPEG_LICENSE: GNU Lesser General Public License v2.1 (LGPLv2.1)
+      WINDOWSRUB_NAME: ${{ vars.WINDOWSRUB_NAME }}
+      CXXOPTS_NAME: ${{ vars.CXXOPTS_NAME }}
+      FFNVCODEC_NAME: ${{ vars.FFNVCODEC_NAME }}
+      FFMPEG_NAME: ${{ vars.FFMPEG_NAME }}
+      WINDOWSRUB_COMMIT: ${{ vars.WINDOWSRUB_COMMIT }}
+      CXXOPTS_COMMIT: ${{ vars.CXXOPTS_COMMIT }}
+      FFNVCODEC_TAG: ${{ vars.FFNVCODEC_TAG }}
+      FFMPEG_TAG: ${{ vars.FFMPEG_TAG }}
+      WINDOWSRUB_REPO: ${{ vars.WINDOWSRUB_REPO }}
+      CXXOPTS_REPO: ${{ vars.CXXOPTS_REPO }}
+      FFNVCODEC_REPO: ${{ vars.FFNVCODEC_REPO }}
+      FFMPEG_REPO: ${{ vars.FFMPEG_REPO }}
+      WINDOWSRUB_LICENSE: ${{ vars.WINDOWSRUB_LICENSE }}
+      CXXOPTS_LICENSE: ${{ vars.CXXOPTS_LICENSE }}
+      FFNVCODEC_LICENSE: ${{ vars.FFNVCODEC_LICENSE }}
+      FFMPEG_LICENSE: ${{ vars.FFMPEG_LICENSE }}
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.

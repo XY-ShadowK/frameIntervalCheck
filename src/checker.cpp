@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <cinttypes>
 
-#include "windowsRub.hpp"
+#include "Universe_Entry.hpp"
 #include "cxxopts.hpp"
 
 #include "include/files.hpp"
@@ -114,8 +114,12 @@ int resolve() {
     ResultBase resultPTSTest;
     uint64_t temp;
     size_t numError = 0;
-    if(settings.count("path"))
-        files = getFiles(settings["path"].as<string>(), settings["pattern"].as<string>(), settings["verbose"].as<bool>());
+    bool isVerbose = settings["verbose"].as<bool>();
+    string path = ".";
+    if(settings.count("path")) {
+        path = settings["path"].as<string>();
+        files = getFiles(path, settings["pattern"].as<string>(), isVerbose);
+    }
     else if(settings.count("file"))
         files = { settings["file"].as<string>() };
     else if(settings.count("version"))
@@ -129,9 +133,10 @@ int resolve() {
     for(size_t i = 0;i < files.size();i ++) {
         const string& file = files[i];
         printf("文件: %s\n", file.c_str());
-        if(getPTSArray(ptsArray, file, optGetPTS, settings["verbose"].as<bool>())) {
-            timeBase = getTimeBase(file);
-            resultPTSTest = findBase(ptsArray, settings["deviation-rate"].as<long double>(), optGetBase, settings["verbose"].as<bool>());
+        const string& filenameFull = path + '/' + file;
+        if(getPTSArray(ptsArray, filenameFull, optGetPTS, isVerbose)) {
+            timeBase = getTimeBase(filenameFull);
+            resultPTSTest = findBase(ptsArray, settings["deviation-rate"].as<long double>(), optGetBase, isVerbose);
             // printf("%d\n", testPreProcess(ptsArray));
             temp = resultPTSTest.numOutlierLeft + resultPTSTest.numOutlierRight;
             if(temp) {
