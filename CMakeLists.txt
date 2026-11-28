@@ -101,6 +101,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 target_include_directories(frameIntervalCheck PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
     ${WINDOWS_RUB_INCLUDE}
     ${CXXOPTS_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}

@@ -5,6 +5,8 @@ time: 2026/10/31 23:08:51
 #ifndef _PTS_HPP_
 #define _PTS_HPP_
 
+#include "include/config.h"
+
 #include <string>
 #include <vector>
 #include <utility>

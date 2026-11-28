@@ -4,6 +4,8 @@
 #include "compiler/version.h.in"
 #endif
 
+#include "include/config.h"
+
 #include <iostream>
 #include <cstdio>
 #include <string>

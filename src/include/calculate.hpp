@@ -5,6 +5,8 @@ time: 2026/11/1 14:39:06
 #ifndef _CALCULATE_HPP_
 #define _CALCULATE_HPP_
 
+#include "include/config.h"
+
 #include <vector>
 #include <cinttypes>
 
